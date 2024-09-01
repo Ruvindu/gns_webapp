@@ -98,7 +98,7 @@ const Sidebar = () => {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static" color="default" elevation={0}>
+            <AppBar position="static" color="primary" elevation={0}>
                 <Toolbar>
                     <IconButton
                         size="large"

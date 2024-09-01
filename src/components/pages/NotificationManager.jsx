@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Paper, Typography, Card, CardContent, TextField, Button, Chip, MenuItem } from '@mui/material';
+import { Box, Paper, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const NotificationManager = () => {
 
@@ -72,38 +74,45 @@ const NotificationManager = () => {
   /* Notification Table Consts*/
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'firstName', headerName: 'First name', width: 130 },
-    { field: 'lastName', headerName: 'Last name', width: 130 },
-    {
-      field: 'age',
-      headerName: 'Age',
-      type: 'number',
-      width: 90,
-    },
-    {
-      field: 'fullName',
-      headerName: 'Full name',
-      description: 'This column has a value getter and is not sortable.',
-      sortable: false,
-      width: 160,
-      valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
-    },
+    // { field: 'id', headerName: 'ID', width: 70 },
+    // { field: 'firstName', headerName: 'First name', width: 130 },
+    // { field: 'lastName', headerName: 'Last name', width: 130 },
+    // {
+    //   field: 'age',
+    //   headerName: 'Age',
+    //   type: 'number',
+    //   width: 90,
+    // },
+    // {
+    //   field: 'fullName',
+    //   headerName: 'Full name',
+    //   description: 'This column has a value getter and is not sortable.',
+    //   sortable: false,
+    //   width: 160,
+    //   valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
+    // },
+
+    { field: 'id', headerName: 'ID', width: 100 },
+    { field: 'type', headerName: 'TYPE', width: 100 },
+    { field: 'priority', headerName: 'PRIORITY', width: 100 },
+    { field: 'template', headerName: 'TEMPLATE', width: 120 },
+    { field: 'status', headerName: 'STATUS', width: 100 },
+    { field: 'subject', headerName: 'SUBJECT', width: 150 },
+    { field: 'body', headerName: 'BODY', width: 200 },
+    { field: 'recipient', headerName: 'RECIPIENT', width: 100 },
+    { field: 'recipientCC', headerName: 'RECIPIENT CC', width: 100 },
+    { field: 'recipientBCC', headerName: 'RECIPIENT BCC', width: 100 },
+    { field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 100 }
   ];
-  
-  
+
+
   const rows = [
-    { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-    { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-    { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-    { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-    { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-    { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-    { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-    { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-    { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+    { id: 1, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
+    { id: 2, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
+    { id: 3, type: 'EMAIL', priority: 'LOW', template: 2, status: "SENT", subject: "OTP Message", body: "Your OTP is 1234", recipient: "test@gmail.com", recipientCC: null, recipientBCC: null, attachment_available: 0 }
+
   ];
-  
+
   const paginationModel = { page: 0, pageSize: 10 };
 
   return (
@@ -283,20 +292,56 @@ const NotificationManager = () => {
 
 
       <Grid size={{ xs: 12, md: 8 }} marginTop={2}>
-        
-        <Paper sx={{ height: 666, width: '100%' }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[10, 20]}
-            checkboxSelection
-            sx={{ border: 0 }}
-          />
-        </Paper>
+        <Card variant='outlined'>
+          <CardContent>
+
+            <Box sx={{
+              display: "flex",
+              justifyContent: 'space-between',
+            }} >
+              <Typography gutterBottom sx={{ color: 'text.secondary', fontSize: 17, marginBottom: 2 }}>
+                All Notification
+              </Typography>
+
+
+              <Stack direction="row" >
+                <Tooltip title="Refresh">
+                  <IconButton aria-label="refresh">
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Re Send">
+                  <IconButton aria-label="resend">
+                    <SendIcon />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Delete">
+                  <IconButton aria-label="delete">
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+
+            </Box>
+
+            <Box sx={{ height: 585, width: '100%' }}>
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                initialState={{ pagination: { paginationModel } }}
+                pageSizeOptions={[10, 20]}
+                checkboxSelection
+                sx={{ border: 0 }}
+              />
+            </Box>
+
+          </CardContent>
+        </Card>
 
       </Grid>
-    </Grid>
+    </Grid >
   );
 };
 
