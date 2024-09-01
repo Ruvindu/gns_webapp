@@ -53,7 +53,7 @@ const Templates = () => {
     templateType: '',
     subjectTemplate: '',
     bodyTemplate: '',
-    // templateDescription: '',
+    templateDescription: '',
     language: ''
   });
 
@@ -74,10 +74,11 @@ const Templates = () => {
       const { templateType, ...dataToSend } = formData;
 
       let response = null;
+      let fetchMethod = null;
       const fetchWithTimeout = (url) => {
         return Promise.race([
           fetch(url, {
-            method: 'POST',
+            method: fetchMethod,
             headers: {
               'Content-Type': 'application/json',
             },
@@ -88,9 +89,22 @@ const Templates = () => {
       };
 
       if (templateType === "1") {
-        response = await fetchWithTimeout('http://localhost:8081/api/templates/create-sms-template');
+        if (formData.templateId !== '') {
+          fetchMethod = 'PUT';
+          response = await fetchWithTimeout('http://localhost:8081/api/templates/update-sms-template');
+        } else {
+          fetchMethod = 'POST';
+          response = await fetchWithTimeout('http://localhost:8081/api/templates/create-sms-template');
+        }
       } else {
-        response = await fetchWithTimeout('http://localhost:8081/api/templates/create-email-template');
+        if (formData.templateId !== '') {
+          fetchMethod = 'PUT';
+          response = await fetchWithTimeout('http://localhost:8081/api/templates/update-email-template');
+        }
+        else {
+          fetchMethod = 'POST';
+          response = await fetchWithTimeout('http://localhost:8081/api/templates/create-email-template');
+        }
       }
 
       if (!response.ok) {
@@ -102,13 +116,14 @@ const Templates = () => {
 
       if (data.status === 1) {
         handleOpenSnackbar(data.narration, 'success');
+        handleReset();
       } else {
         handleOpenSnackbar(data.narration, 'error');
       }
 
     } catch (error) {
       console.error('Error:', error);
-      handleOpenSnackbar(error.message, 'error'); 
+      handleOpenSnackbar(error.message, 'error');
     } finally {
       handleCloseBackDrop();
     }
@@ -122,7 +137,7 @@ const Templates = () => {
       templateType: '',
       subjectTemplate: '',
       bodyTemplate: '',
-      // templateDescription: '',
+      templateDescription: '',
       language: ''
     });
   };
@@ -175,7 +190,6 @@ const Templates = () => {
     { value: 'MAR', label: 'Marathi' },
     { value: 'GUJ', label: 'Gujarati' },
     { value: 'KAN', label: 'Kannada' },
-    { value: 'MALAYAL', label: 'Malayalam' },
     { value: 'PUN', label: 'Punjabi' },
     { value: 'NEP', label: 'Nepali' },
     { value: 'SIN', label: 'Sinhala' },
@@ -198,13 +212,12 @@ const Templates = () => {
     { value: 'AFR', label: 'Afrikaans' },
     { value: 'SWA', label: 'Swahili' },
     { value: 'YOR', label: 'Yoruba' },
-    { value: 'IGB', label: 'Igbo' },
+    { value: 'IGB', label: 'Igbo' },  
     { value: 'HAU', label: 'Hausa' },
     { value: 'SOM', label: 'Somali' },
     { value: 'AMH', label: 'Amharic' },
     { value: 'TIR', label: 'Tigrinya' },
     { value: 'ORO', label: 'Oromo' },
-    { value: 'MAL', label: 'Malagasy' },
     { value: 'SOT', label: 'Sesotho' },
     { value: 'TSN', label: 'Tswana' },
     { value: 'XHO', label: 'Xhosa' },
@@ -330,14 +343,14 @@ const Templates = () => {
                 size='small'
               />
 
-              {/* <TextField
+              <TextField
                 label="Template Description"
                 name="templateDescription"
                 value={formData.templateDescription}
                 onChange={handleChange}
                 fullWidth
                 size='small'
-              /> */}
+              />
 
               <TextField
                 id="language"
@@ -368,7 +381,7 @@ const Templates = () => {
                 <Button type="reset" variant="outlined" color="primary" fullWidth>
                   Reset
                 </Button>
-                <Button type="submit" variant="contained" color="primary" endIcon={<SaveIcon />} fullWidth>
+                <Button type="submit" variant="contained" color="primary" startIcon={<SaveIcon />} fullWidth>
                   Save
                 </Button>
               </Box>
