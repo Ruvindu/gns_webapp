@@ -103,7 +103,7 @@ const Templates = () => {
         }
         else {
           fetchMethod = 'POST';
-          response = await fetchWithTimeout('http://localhost:8081/api/templates/create-email-template');
+          response = await fetchWithTimeout('http://3.104.30.209:8081/api/templates/create-email-template');
         }
       }
 

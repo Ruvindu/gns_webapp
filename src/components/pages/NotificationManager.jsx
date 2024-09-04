@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Paper, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Box, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -8,6 +8,43 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const NotificationManager = () => {
+
+  /* BackDrop */
+  const [openBackDrop, setOpenBackDrop] = useState(false);
+  const handleCloseBackDrop = () => {
+    setOpenBackDrop(false);
+  };
+  const handleOpenBackDrop = () => {
+    setOpenBackDrop(true);
+  };
+
+  /* Snackbar */
+  const [openSnackbar, setOpenSnackbar] = useState({
+    open: false,
+    message: '',
+    type: ''
+  });
+
+  const handleOpenSnackbar = (snackbarMessage, SnackbarType) => {
+    setOpenSnackbar({
+      open: true,
+      message: snackbarMessage,
+      type: SnackbarType,
+    });
+  };
+
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSnackbar(prevState => ({
+      ...prevState,
+      open: false,
+    }));
+  };
+
 
   /* Notification Form Consts*/
 
@@ -43,9 +80,53 @@ const NotificationManager = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    handleOpenBackDrop();
+
+    // Prepare the form data
+    const formDataToSend = new FormData();
+    formDataToSend.append('notificationType', formData.notificationType);
+    formDataToSend.append('priority', formData.priority);
+    formDataToSend.append('templateId', formData.templateId);
+    formDataToSend.append('subject', formData.subject);
+    formDataToSend.append('body', formData.body);
+    formDataToSend.append('recipient', formData.recipient);
+    formDataToSend.append('recipientCC', formData.recipientCC);
+    formDataToSend.append('recipientBCC', formData.recipientBCC);
+
+    formData.attachments.forEach((file) => {
+      formDataToSend.append('attachments', file);
+    });
+
+    try {
+      const response = await fetch('http://localhost:8081/api/notifications/create-notification', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      if (!response.ok) {
+        throw new Error('Unexpected error occurred');
+      }
+
+      let data = await response.json();
+      console.log('Success:', data);
+
+      if (data.status === 1) {
+        handleOpenSnackbar(data.narration, 'success');
+        handleReset();
+      } else {
+        handleOpenSnackbar(data.narration, 'error');
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      handleOpenSnackbar(error.message, 'error');
+    } finally {
+      handleCloseBackDrop();
+    }
+
   };
 
   const handleReset = () => {
@@ -117,6 +198,27 @@ const NotificationManager = () => {
 
   return (
     <Grid container spacing={3} padding={5}>
+
+      {/* Helper components */}
+      <Backdrop
+        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={openBackDrop}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      <Snackbar open={openSnackbar.open} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} autoHideDuration={5000} onClose={handleCloseSnackbar} >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={openSnackbar.type}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {openSnackbar.message}
+        </Alert>
+      </Snackbar>
+
+
       <Grid size={12}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'gray' }}>
           Notification Manager
