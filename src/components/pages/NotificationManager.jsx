@@ -167,7 +167,7 @@ const NotificationManager = () => {
 
 
   /* Retrive Templates */
-  const [templateIds, setTemplateIds] = useState([]);
+  const [templateIds, setTemplateIds] = useState([{ value: '0', label: '0 - No Template Selected' }]);
 
   const retriveTemplates = async (notificationType) => {
     handleOpenBackDrop();
