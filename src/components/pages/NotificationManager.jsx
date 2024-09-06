@@ -50,7 +50,7 @@ const NotificationManager = () => {
   };
 
 
-  /* Notification Form Consts*/
+  /* Notification Form Consts */
 
   const [formData, setFormData] = useState({
     notificationType: '',
@@ -67,6 +67,10 @@ const NotificationManager = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (name === "notificationType") {
+      retriveTemplates(value);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -161,11 +165,65 @@ const NotificationManager = () => {
     });
   };
 
-  const templateIds = [
-    { value: '0', label: '0 - No Template Selected' },
-    { value: '1', label: '1' },
-    { value: '2', label: '2' },
-  ];
+
+  /* Retrive Templates */
+  const [templateIds, setTemplateIds] = useState([]);
+
+  const retriveTemplates = async (notificationType) => {
+    handleOpenBackDrop();
+
+    try {
+      let response = null;
+
+      if (notificationType === '1') { // SMS
+        response = await axios.get(`${config.apiBaseUrl}${config.getAllSmsTemplates}`);
+      } else {
+        response = await axios.get(`${config.apiBaseUrl}${config.getAllEmailTemplates}`);
+      }
+
+      const data = response.data;
+      console.log('Success:', data);
+
+      if (data.status === 1) {
+        handleOpenSnackbar(data.narration, 'success');
+      } else {
+        handleOpenSnackbar(data.narration, 'error');
+      }
+
+      // Map response to the structure needed for useState
+      const newTemplateOptions = data.data.map(template => ({
+        value: template.templateId.toString(),
+        label: `${template.templateId} - ${template.templateDescription}`
+      }));
+
+      // Update the state, keeping the default value as the first element
+      setTemplateIds([
+        { value: '0', label: '0 - No Template Selected' },
+        ...newTemplateOptions // Add new options from the response
+      ]);
+
+
+    } catch (error) {
+      console.error('Error:', error);
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Template loading failed. Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('Template loading failed. No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'Template loading failed. Server error');
+      }
+    } finally {
+      handleCloseBackDrop();
+    }
+
+  }
 
   const isSmsSelected = formData.notificationType === "1"; // 1 corresponds to SMS
 

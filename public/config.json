@@ -5,6 +5,8 @@
     "updateSmsTemplate": "/templates/update-sms-template",
     "createEmailTemplate": "/templates/create-email-template",
     "updateEmailTemplate": "/templates/update-email-template",
+    "getAllSmsTemplates": "/templates/get-all-sms-template",
+    "getAllEmailTemplates": "/templates/get-all-email-template",
 
     "createNotification": "/notifications/create-notification"
   }
