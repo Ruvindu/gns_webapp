@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import useConfig from '../../useConfig';
 import { Box, Typography, Card, CardContent, TextField, Button, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -74,54 +75,38 @@ const Templates = () => {
       return;
     }
 
-    
     handleOpenBackDrop();
-
-    // Timeout function that rejects the promise after a specified time
-    const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
 
     try {
       const { templateType, ...dataToSend } = formData;
 
       let response = null;
-      let fetchMethod = null;
-      const fetchWithTimeout = (url) => {
-        return Promise.race([
-          fetch(url, {
-            method: fetchMethod,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dataToSend)
-          }),
-          timeout(10000) // Set timeout to 10 seconds (10000 milliseconds)
-        ]);
-      };
 
       if (templateType === "1") {
         if (formData.templateId !== '') {
-          fetchMethod = 'PUT';
-          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.updateSmsTemplate}`);
+          response = await axios.put(`${config.apiBaseUrl}${config.updateSmsTemplate}`,
+            dataToSend,
+          );
         } else {
-          fetchMethod = 'POST';
-          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.createSmsTemplate}`);
+          response = await axios.post(`${config.apiBaseUrl}${config.createSmsTemplate}`,
+            dataToSend,
+          );
         }
       } else {
         if (formData.templateId !== '') {
-          fetchMethod = 'PUT';
-          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.updateEmailTemplate}`);
+          response = await axios.put(`${config.apiBaseUrl}${config.updateEmailTemplate}`,
+            dataToSend,
+          );
         }
         else {
-          fetchMethod = 'POST';
-          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.createEmailTemplate}`);
+          response = await axios.post(`${config.apiBaseUrl}${config.createEmailTemplate}`,
+            dataToSend,
+          );
         }
       }
 
-      if (!response.ok) {
-        throw new Error('Unexpected error occurred');
-      }
 
-      let data = await response.json();
+      const data = response.data;
       console.log('Success:', data);
 
       if (data.status === 1) {
@@ -133,7 +118,20 @@ const Templates = () => {
 
     } catch (error) {
       console.error('Error:', error);
-      handleOpenSnackbar(error.message, 'error');
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'error');
+      }
     } finally {
       handleCloseBackDrop();
     }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import useConfig from '../../useConfig';
 import { Box, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -110,16 +111,11 @@ const NotificationManager = () => {
     });
 
     try {
-      const response = await fetch(`${config.apiBaseUrl}${config.createNotification}`, {
-        method: 'POST',
-        body: formDataToSend,
-      });
+      const response = await axios.post(`${config.apiBaseUrl}${config.createNotification}`,
+        formDataToSend,
+      );
 
-      if (!response.ok) {
-        throw new Error('Unexpected error occurred');
-      }
-
-      let data = await response.json();
+      const data = response.data;
       console.log('Success:', data);
 
       if (data.status === 1) {
@@ -131,7 +127,20 @@ const NotificationManager = () => {
 
     } catch (error) {
       console.error('Error:', error);
-      handleOpenSnackbar(error.message, 'error');
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'error');
+      }
     } finally {
       handleCloseBackDrop();
     }
