@@ -191,7 +191,7 @@ const NotificationManager = () => {
       }
 
       // Map response to the structure needed for useState
-      const newTemplateOptions = data.data.map(template => ({
+      const newTemplateOptions = data.content.map(template => ({
         value: template.templateId.toString(),
         label: `${template.templateId} - ${template.templateDescription}`
       }));
@@ -217,7 +217,7 @@ const NotificationManager = () => {
         handleOpenSnackbar('Template loading failed. No response received from server', 'error');
       } else {
         // Something else happened while setting up the request
-        handleOpenSnackbar(error.message, 'Template loading failed. Server error');
+        handleOpenSnackbar(error.message, 'error');
       }
     } finally {
       handleCloseBackDrop();
