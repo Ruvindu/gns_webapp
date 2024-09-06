@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useConfig from '../../useConfig';
 import { Box, Typography, Card, CardContent, TextField, Button, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
@@ -8,6 +9,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 
 const Templates = () => {
+
+  const config = useConfig();
 
   /* BackDrop */
   const [openBackDrop, setOpenBackDrop] = useState(false);
@@ -65,6 +68,13 @@ const Templates = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    //load configurations
+    if (!config) {
+      console.error('Configuration is not loaded yet.');
+      return;
+    }
+
+    
     handleOpenBackDrop();
 
     // Timeout function that rejects the promise after a specified time
@@ -91,19 +101,19 @@ const Templates = () => {
       if (templateType === "1") {
         if (formData.templateId !== '') {
           fetchMethod = 'PUT';
-          response = await fetchWithTimeout('http://localhost:8081/api/templates/update-sms-template');
+          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.updateSmsTemplate}`);
         } else {
           fetchMethod = 'POST';
-          response = await fetchWithTimeout('http://localhost:8081/api/templates/create-sms-template');
+          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.createSmsTemplate}`);
         }
       } else {
         if (formData.templateId !== '') {
           fetchMethod = 'PUT';
-          response = await fetchWithTimeout('http://localhost:8081/api/templates/update-email-template');
+          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.updateEmailTemplate}`);
         }
         else {
           fetchMethod = 'POST';
-          response = await fetchWithTimeout('http://3.104.30.209:8081/api/templates/create-email-template');
+          response = await fetchWithTimeout(`${config.apiBaseUrl}${config.createEmailTemplate}`);
         }
       }
 
@@ -212,7 +222,7 @@ const Templates = () => {
     { value: 'AFR', label: 'Afrikaans' },
     { value: 'SWA', label: 'Swahili' },
     { value: 'YOR', label: 'Yoruba' },
-    { value: 'IGB', label: 'Igbo' },  
+    { value: 'IGB', label: 'Igbo' },
     { value: 'HAU', label: 'Hausa' },
     { value: 'SOM', label: 'Somali' },
     { value: 'AMH', label: 'Amharic' },

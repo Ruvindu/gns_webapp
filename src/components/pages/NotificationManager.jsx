@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useConfig from '../../useConfig';
 import { Box, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
@@ -8,6 +9,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 const NotificationManager = () => {
+
+  const config = useConfig();
 
   /* BackDrop */
   const [openBackDrop, setOpenBackDrop] = useState(false);
@@ -83,6 +86,12 @@ const NotificationManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    //load configurations
+    if (!config) {
+      console.error('Configuration is not loaded yet.');
+      return;
+    }
+
     handleOpenBackDrop();
 
     // Prepare the form data
@@ -101,7 +110,7 @@ const NotificationManager = () => {
     });
 
     try {
-      const response = await fetch('http://localhost:8081/api/notifications/create-notification', {
+      const response = await fetch(`${config.apiBaseUrl}${config.createNotification}`, {
         method: 'POST',
         body: formDataToSend,
       });

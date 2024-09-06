@@ -1,0 +1,11 @@
+{
+    "apiBaseUrl": "http://localhost:8081/api",
+    
+    "createSmsTemplate": "/templates/create-sms-template",
+    "updateSmsTemplate": "/templates/update-sms-template",
+    "createEmailTemplate": "/templates/create-email-template",
+    "updateEmailTemplate": "/templates/update-email-template",
+
+    "createNotification": "/notifications/create-notification"
+  }
+  
