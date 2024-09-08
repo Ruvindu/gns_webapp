@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useConfig from '../../useConfig';
 import { Box, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
@@ -91,7 +91,7 @@ const NotificationManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //load configurations
+    /* load configurations */
     if (!config) {
       console.error('Configuration is not loaded yet.');
       return;
@@ -99,7 +99,7 @@ const NotificationManager = () => {
 
     handleOpenBackDrop();
 
-    // Prepare the form data
+    /* Prepare the form data  */
     const formDataToSend = new FormData();
     formDataToSend.append('notificationType', formData.notificationType);
     formDataToSend.append('priority', formData.priority);
@@ -170,6 +170,13 @@ const NotificationManager = () => {
   const [templateIds, setTemplateIds] = useState([{ value: '0', label: '0 - No Template Selected' }]);
 
   const retriveTemplates = async (notificationType) => {
+
+    /* load configurations */
+    if (!config) {
+      console.error('Configuration is not loaded yet.');
+      return;
+    }
+
     handleOpenBackDrop();
 
     try {
@@ -263,14 +270,93 @@ const NotificationManager = () => {
   ];
 
 
-  const rows = [
-    { id: 1, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
-    { id: 2, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
-    { id: 3, type: 'EMAIL', priority: 'LOW', template: 2, status: "SENT", subject: "OTP Message", body: "Your OTP is 1234", recipient: "test@gmail.com", recipientCC: null, recipientBCC: null, attachment_available: 0 }
+  // const rows = [
+  //   { id: 1, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
+  //   { id: 2, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
+  //   { id: 3, type: 'EMAIL', priority: 'LOW', template: 2, status: "SENT", subject: "OTP Message", body: "Your OTP is 1234", recipient: "test@gmail.com", recipientCC: null, recipientBCC: null, attachment_available: 0 }
 
-  ];
+  // ];
 
-  const paginationModel = { page: 0, pageSize: 10 };
+
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [notificationTableRows, setNotificationTableRows] = useState([]);
+  const [totalItems, setTotalItems] = useState(0); // Track total items for pagination
+
+  const retrieveAllNotifications = async () => {
+
+    /* load configurations */
+    if (!config) {
+      console.error('Configuration is not loaded yet.');
+      return;
+    }
+
+    // handleOpenBackDrop();
+
+    try {
+      console.log(paginationModel.page, paginationModel.pageSize);
+      const response = await axios.get(`${config.apiBaseUrl}${config.getAllNotifications}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
+
+
+      const data = response.data;
+      console.log('Success:', data);
+
+      // if (data.status === 1) {
+      //   handleOpenSnackbar(data.narration, 'success');
+      // } else {
+      //   handleOpenSnackbar(data.narration, 'error');
+      // }
+
+      //Map response to the structure needed for useState
+      const newNotificationTableRows = data.content.map(notificationRow => ({
+        id: notificationRow.notificationId.toString(),
+        type: notificationRow.notificationType.toString(),
+        priority: notificationRow.priority.toString(),
+        template: notificationRow.templateId.toString(),
+        status: "",
+        subject: notificationRow.subject.toString(),
+        body: notificationRow.body.toString(),
+        recipient: notificationRow.recipient.toString(),
+        recipientCC: notificationRow.recipientCC.toString(),
+        recipientBCC: notificationRow.recipientBCC.toString(),
+        attachment_available: notificationRow.attachmentsAvailable.toString()
+      }));
+
+      // Update the state, keeping the default value as the first element
+      setNotificationTableRows(newNotificationTableRows);
+      setTotalItems(data.totalItems);
+
+
+    } catch (error) {
+      console.error('Error:', error);
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Notification table loading failed. Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('Notification table loading failed. No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'error');
+      }
+    } finally {
+      // handleCloseBackDrop();
+    }
+
+  }
+
+  // Fetch notifications on component mount and when pagination model changes
+  // useEffect(() => {
+  //   console.log("run");
+  //   if (config) { // Wait for config to be available
+  //     console.log("run2");
+  //     retrieveAllNotifications(paginationModel.page, paginationModel.pageSize);
+  //   }
+  // }, [paginationModel]);
+
 
   return (
     <Grid container spacing={3} padding={5}>
@@ -484,7 +570,7 @@ const NotificationManager = () => {
 
               <Stack direction="row" >
                 <Tooltip title="Refresh">
-                  <IconButton aria-label="refresh">
+                  <IconButton aria-label="refresh" onClick={() => retrieveAllNotifications()}>
                     <RefreshIcon />
                   </IconButton>
                 </Tooltip>
@@ -506,10 +592,18 @@ const NotificationManager = () => {
 
             <Box sx={{ height: 585, width: '100%' }}>
               <DataGrid
-                rows={rows}
+                rows={notificationTableRows}
                 columns={columns}
-                initialState={{ pagination: { paginationModel } }}
-                pageSizeOptions={[10, 20]}
+                pagination
+                paginationMode="server"
+                pageSizeOptions={[10, 20]} // Options for page size
+                rowCount={totalItems} // Must match the total number of items from the server
+                pageSize={paginationModel.pageSize} // Current page size
+                page={paginationModel.page} // Current page
+                onPaginationModelChange={(newPaginationModel) => {
+                  setPaginationModel(newPaginationModel);
+                  retrieveAllNotifications();
+                }}
                 checkboxSelection
                 sx={{ border: 0 }}
               />
