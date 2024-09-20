@@ -8,6 +8,11 @@ import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import SmsIcon from '@mui/icons-material/Sms';
+import EmailIcon from '@mui/icons-material/Email';
+import DoneIcon from '@mui/icons-material/Done';
+import ClearIcon from '@mui/icons-material/Clear';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 const NotificationManager = () => {
 
@@ -237,60 +242,98 @@ const NotificationManager = () => {
 
   /* Notification Table Consts*/
 
-  const columns = [
-    // { field: 'id', headerName: 'ID', width: 70 },
-    // { field: 'firstName', headerName: 'First name', width: 130 },
-    // { field: 'lastName', headerName: 'Last name', width: 130 },
-    // {
-    //   field: 'age',
-    //   headerName: 'Age',
-    //   type: 'number',
-    //   width: 90,
-    // },
-    // {
-    //   field: 'fullName',
-    //   headerName: 'Full name',
-    //   description: 'This column has a value getter and is not sortable.',
-    //   sortable: false,
-    //   width: 160,
-    //   valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
-    // },
+  // Custom function to render
+  const renderType = (type) => {
+    if (type === '1') {
+      return <Chip icon={<SmsIcon />} label="SMS" size="small" sx={{ padding: '5px' }} />;
 
-    { field: 'id', headerName: 'ID', width: 100 },
-    { field: 'type', headerName: 'TYPE', width: 100 },
-    { field: 'priority', headerName: 'PRIORITY', width: 100 },
-    { field: 'template', headerName: 'TEMPLATE', width: 120 },
-    { field: 'status', headerName: 'STATUS', width: 100 },
+    } else if (type === '2') {
+      return <Chip icon={<EmailIcon />} label="Email" size="small" sx={{ padding: '5px' }} />;
+    }
+    else {
+      return <Chip icon={<QuestionMarkIcon />} label="Unknown" size="small" sx={{ padding: '5px' }} />;
+    }
+
+  };
+
+  const renderPriority = (priority) => {
+    if (priority === '1') {
+      return <Chip label="High" size="small" color="error" variant="outlined" />
+
+    } else if (priority === '2') {
+      return <Chip label="Low" size="small" color="warning" variant="outlined" />
+    }
+    else {
+      return <Chip label="Unknown" size="small" color="default" variant="outlined" />
+    }
+
+  };
+
+  const renderStatusChip = (status) => {
+    if (status === '0') {
+      return <Chip label="Pending" color="default" size="small" variant="outlined" />;
+
+    } else if (status === '1') {
+      return <Chip label="Procceing" color="primary" size="small" variant="outlined" />;
+    }
+    else if (status === '2') {
+      return <Chip label="Queued" color="warning" size="small" variant="outlined" />;
+    }
+    else if (status === '3') {
+      return <Chip label="Dequeued" color="warning" size="small" variant="outlined" />;
+    }
+    else if (status === '4') {
+      return <Chip label="Proccessed" color="success" size="small" variant="outlined" />;
+    }
+    else if (status === '-1') {
+      return <Chip label="Failed" color="error" size="small" variant="outlined" />;
+    }
+    else {
+      return <Chip label="Unknown" color="error" size="small" variant="outlined" />;
+    }
+  };
+
+  const renderAttachmentAvailability = (type) => {
+    if (type === '2,0') {
+      return <Chip icon={<ClearIcon />} label="No" size="small" sx={{ padding: '5px' }} />;
+
+    } else if (type === '2,1') {
+      return <Chip icon={<DoneIcon />} label="Yes" size="small" sx={{ padding: '5px' }} />;
+    }
+    else {
+      return "";
+    }
+  };
+
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 80 },
+    { field: 'type', headerName: 'TYPE', width: 100, headerAlign: 'center', align: 'center', renderCell: (params) => renderType(params.value) },
+    { field: 'priority', headerName: 'PRIORITY', width: 100, headerAlign: 'center', align: 'center', renderCell: (params) => renderPriority(params.value) },
+    { field: 'template', headerName: 'TEMPLATE', width: 100 },
+    { field: 'status', headerName: 'STATUS', width: 110, headerAlign: 'center', align: 'center', renderCell: (params) => renderStatusChip(params.value) },
     { field: 'subject', headerName: 'SUBJECT', width: 150 },
     { field: 'body', headerName: 'BODY', width: 200 },
     { field: 'recipient', headerName: 'RECIPIENT', width: 100 },
     { field: 'recipientCC', headerName: 'RECIPIENT CC', width: 100 },
     { field: 'recipientBCC', headerName: 'RECIPIENT BCC', width: 100 },
-    { field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 100 }
+    { field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 100, headerAlign: 'center', align: 'center', 
+      valueGetter: (value, row) => `${row.type},${row.attachment_available}`, renderCell: (params) => renderAttachmentAvailability(params.value)
+    }
   ];
 
-
-  // const rows = [
-  //   { id: 1, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
-  //   { id: 2, type: 'SMS', priority: 'HIGH', template: 2, status: "SENT", subject: null, body: "Your OTP is 1234", recipient: "0711234500", recipientCC: null, recipientBCC: null, attachment_available: 0 },
-  //   { id: 3, type: 'EMAIL', priority: 'LOW', template: 2, status: "SENT", subject: "OTP Message", body: "Your OTP is 1234", recipient: "test@gmail.com", recipientCC: null, recipientBCC: null, attachment_available: 0 }
-
-  // ];
-
-
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [loading, setLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 100 });
   const [notificationTableRows, setNotificationTableRows] = useState([]);
   const [totalItems, setTotalItems] = useState(0); // Track total items for pagination
 
   const retrieveAllNotifications = async () => {
+    setLoading(true);
 
     /* load configurations */
     if (!config) {
       console.error('Configuration is not loaded yet.');
       return;
     }
-
-    // handleOpenBackDrop();
 
     try {
       console.log(paginationModel.page, paginationModel.pageSize);
@@ -300,26 +343,21 @@ const NotificationManager = () => {
       const data = response.data;
       console.log('Success:', data);
 
-      // if (data.status === 1) {
-      //   handleOpenSnackbar(data.narration, 'success');
-      // } else {
-      //   handleOpenSnackbar(data.narration, 'error');
-      // }
-
       //Map response to the structure needed for useState
       const newNotificationTableRows = data.content.map(notificationRow => ({
-        id: notificationRow.notificationId.toString(),
-        type: notificationRow.notificationType.toString(),
-        priority: notificationRow.priority.toString(),
-        template: notificationRow.templateId.toString(),
-        status: "",
-        subject: notificationRow.subject.toString(),
-        body: notificationRow.body.toString(),
-        recipient: notificationRow.recipient.toString(),
-        recipientCC: notificationRow.recipientCC.toString(),
-        recipientBCC: notificationRow.recipientBCC.toString(),
-        attachment_available: notificationRow.attachmentsAvailable.toString()
+        id: notificationRow.notificationId?.toString() ?? "", // Fallback to an empty string
+        type: notificationRow.notificationType?.toString() ?? "",
+        priority: notificationRow.priority?.toString() ?? "",
+        template: notificationRow.templateId?.toString() ?? "",
+        status: notificationRow.status?.toString() ?? "",
+        subject: notificationRow.subject?.toString() ?? "",
+        body: notificationRow.body?.toString() ?? "",
+        recipient: notificationRow.recipient?.toString() ?? "",
+        recipientCC: notificationRow.recipientCC?.toString() ?? "",
+        recipientBCC: notificationRow.recipientBCC?.toString() ?? "",
+        attachment_available: notificationRow.isAttachmentsAvailable?.toString() ?? ""
       }));
+
 
       // Update the state, keeping the default value as the first element
       setNotificationTableRows(newNotificationTableRows);
@@ -343,19 +381,17 @@ const NotificationManager = () => {
         handleOpenSnackbar(error.message, 'error');
       }
     } finally {
-      // handleCloseBackDrop();
+      setLoading(false);
     }
 
   }
 
-  // Fetch notifications on component mount and when pagination model changes
-  // useEffect(() => {
-  //   console.log("run");
-  //   if (config) { // Wait for config to be available
-  //     console.log("run2");
-  //     retrieveAllNotifications(paginationModel.page, paginationModel.pageSize);
-  //   }
-  // }, [paginationModel]);
+  //Fetch notifications on component mount and when pagination model changes
+  useEffect(() => {
+    if (config) {
+      retrieveAllNotifications(paginationModel.page, paginationModel.pageSize);
+    }
+  }, [config, paginationModel]);
 
 
   return (
@@ -483,6 +519,7 @@ const NotificationManager = () => {
                 name="recipient"
                 value={formData.recipient}
                 onChange={handleChange}
+                required
                 fullWidth
                 size='small'
               />
@@ -594,15 +631,14 @@ const NotificationManager = () => {
               <DataGrid
                 rows={notificationTableRows}
                 columns={columns}
+                loading={loading}
                 pagination
                 paginationMode="server"
-                pageSizeOptions={[10, 20]} // Options for page size
-                rowCount={totalItems} // Must match the total number of items from the server
-                pageSize={paginationModel.pageSize} // Current page size
-                page={paginationModel.page} // Current page
+                rowCount={totalItems}
+                pageSize={paginationModel.pageSize}
+                page={paginationModel.page}
                 onPaginationModelChange={(newPaginationModel) => {
                   setPaginationModel(newPaginationModel);
-                  retrieveAllNotifications();
                 }}
                 checkboxSelection
                 sx={{ border: 0 }}

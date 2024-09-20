@@ -90,7 +90,7 @@ const Sidebar = () => {
             </Box>
             <Box>
                 <Typography variant="caption" sx={{ display: 'block', padding: 2, textAlign: 'left', color: 'GrayText' }}>
-                    CopyRights © GNS 2024
+                    Copyrights © GNS 2024
                 </Typography>
             </Box>
         </Box>
