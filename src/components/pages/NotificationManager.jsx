@@ -12,6 +12,10 @@ import SmsIcon from '@mui/icons-material/Sms';
 import EmailIcon from '@mui/icons-material/Email';
 import DoneIcon from '@mui/icons-material/Done';
 import ClearIcon from '@mui/icons-material/Clear';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
+import QueryBuilderIcon from '@mui/icons-material/QueryBuilder';
+import SyncIcon from '@mui/icons-material/Sync';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 const NotificationManager = () => {
@@ -261,7 +265,7 @@ const NotificationManager = () => {
       return <Chip label="High" size="small" color="error" variant="outlined" />
 
     } else if (priority === '2') {
-      return <Chip label="Low" size="small" color="warning" variant="outlined" />
+      return <Chip label="Low" size="small" color="default" variant="outlined" />
     }
     else {
       return <Chip label="Unknown" size="small" color="default" variant="outlined" />
@@ -271,25 +275,25 @@ const NotificationManager = () => {
 
   const renderStatusChip = (status) => {
     if (status === '0') {
-      return <Chip label="Pending" color="default" size="small" variant="outlined" />;
+      return <Chip icon={<QueryBuilderIcon />} label="Pending" color="default" size="small" variant="outlined" />;
 
     } else if (status === '1') {
-      return <Chip label="Procceing" color="primary" size="small" variant="outlined" />;
+      return <Chip icon={<SyncIcon />} label="Procceing" color="primary" size="small" variant="outlined" />;
     }
     else if (status === '2') {
-      return <Chip label="Queued" color="warning" size="small" variant="outlined" />;
+      return <Chip icon={<SwapHorizIcon />} label="Queued" color="warning" size="small" variant="outlined" />;
     }
     else if (status === '3') {
-      return <Chip label="Dequeued" color="warning" size="small" variant="outlined" />;
+      return <Chip icon={<SwapHorizIcon />} label="Dequeued" color="warning" size="small" variant="outlined" />;
     }
     else if (status === '4') {
-      return <Chip label="Proccessed" color="success" size="small" variant="outlined" />;
+      return <Chip icon={<DoneIcon />} label="Proccessed" color="success" size="small" variant="outlined" />;
     }
     else if (status === '-1') {
-      return <Chip label="Failed" color="error" size="small" variant="outlined" />;
+      return <Chip icon={<PriorityHighIcon />} label="Failed" color="error" size="small" variant="outlined" />;
     }
     else {
-      return <Chip label="Unknown" color="error" size="small" variant="outlined" />;
+      return <Chip icon={<QuestionMarkIcon />} label="Unknown" color="error" size="small" variant="outlined" />;
     }
   };
 
@@ -305,20 +309,34 @@ const NotificationManager = () => {
     }
   };
 
+  const renderTimeFeilds = (time) => {
+    if (time > 0) {
+      return time;
+
+    } else {
+      return "";
+    }
+  };
+
   const columns = [
     { field: 'id', headerName: 'ID', width: 80 },
     { field: 'type', headerName: 'TYPE', width: 100, headerAlign: 'center', align: 'center', renderCell: (params) => renderType(params.value) },
     { field: 'priority', headerName: 'PRIORITY', width: 100, headerAlign: 'center', align: 'center', renderCell: (params) => renderPriority(params.value) },
     { field: 'template', headerName: 'TEMPLATE', width: 100 },
-    { field: 'status', headerName: 'STATUS', width: 110, headerAlign: 'center', align: 'center', renderCell: (params) => renderStatusChip(params.value) },
+    { field: 'status', headerName: 'STATUS', width: 130, headerAlign: 'center', align: 'center', renderCell: (params) => renderStatusChip(params.value) },
+    { field: 'toProcess', headerName: 'TIME TAKEN TO PROCESS(s)', width: 150, renderCell: (params) => renderTimeFeilds(params.value) },
+    { field: 'toSend', headerName: 'TIME TAKEN TO SEND(s)', width: 150, renderCell: (params) => renderTimeFeilds(params.value) },
     { field: 'subject', headerName: 'SUBJECT', width: 150 },
     { field: 'body', headerName: 'BODY', width: 200 },
     { field: 'recipient', headerName: 'RECIPIENT', width: 100 },
     { field: 'recipientCC', headerName: 'RECIPIENT CC', width: 100 },
     { field: 'recipientBCC', headerName: 'RECIPIENT BCC', width: 100 },
-    { field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 100, headerAlign: 'center', align: 'center', 
+    {
+      field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 100, headerAlign: 'center', align: 'center',
       valueGetter: (value, row) => `${row.type},${row.attachment_available}`, renderCell: (params) => renderAttachmentAvailability(params.value)
-    }
+    },
+    { field: 'failedReason', headerName: 'FAILED REASON', width: 300 },
+
   ];
 
   const [loading, setLoading] = useState(false);
@@ -350,12 +368,15 @@ const NotificationManager = () => {
         priority: notificationRow.priority?.toString() ?? "",
         template: notificationRow.templateId?.toString() ?? "",
         status: notificationRow.status?.toString() ?? "",
+        toProcess: notificationRow.toProcess?.toString() ?? "",
+        toSend: notificationRow.toSend?.toString() ?? "",
         subject: notificationRow.subject?.toString() ?? "",
         body: notificationRow.body?.toString() ?? "",
         recipient: notificationRow.recipient?.toString() ?? "",
         recipientCC: notificationRow.recipientCC?.toString() ?? "",
         recipientBCC: notificationRow.recipientBCC?.toString() ?? "",
-        attachment_available: notificationRow.isAttachmentsAvailable?.toString() ?? ""
+        attachment_available: notificationRow.isAttachmentsAvailable?.toString() ?? "",
+        failedReason: notificationRow.failedReason?.toString() ?? ""
       }));
 
 

@@ -280,7 +280,7 @@ const Templates = () => {
 
       <Grid size={12}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'gray' }}>
-          Notification Templates
+          Templates Repository
         </Typography>
       </Grid>
 

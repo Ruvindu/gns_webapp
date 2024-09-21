@@ -70,7 +70,7 @@ const Sidebar = () => {
                         <ListItemIcon>
                             <DescriptionIcon />
                         </ListItemIcon>
-                        <ListItemText primary='Templates' />
+                        <ListItemText primary='Templates Repository' />
                     </ListItemButton>
 
                     <ListItemButton onClick={() => handleNavigation('/Cache')}>
