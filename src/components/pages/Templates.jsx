@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useConfig from '../../useConfig';
-import { Box, Typography, Card, CardContent, TextField, Button, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, Card, CardContent, TextField, Button, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert, Chip } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
+import SmsIcon from '@mui/icons-material/Sms';
+import EmailIcon from '@mui/icons-material/Email';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
 const Templates = () => {
 
@@ -234,23 +237,96 @@ const Templates = () => {
 
   /* Template Table Consts*/
 
+  // Custom function to render
+  const renderType = (type) => {
+    if (type === '1') {
+      return <Chip icon={<SmsIcon />} label="SMS" size="small" sx={{ padding: '5px' }} />;
+
+    } else if (type === '2') {
+      return <Chip icon={<EmailIcon />} label="Email" size="small" sx={{ padding: '5px' }} />;
+    }
+    else {
+      return <Chip icon={<QuestionMarkIcon />} label="Unknown" size="small" sx={{ padding: '5px' }} />;
+    }
+
+  };
+
   const columns = [
-    { field: 'id', headerName: 'TEMPLATE ID', width: 110 },
-    { field: 'templateType', headerName: 'TEMPLATE TYPE', width: 130 },
+    { field: 'id', headerName: 'ROW NO', width: 100 },
+    { field: 'templateId', headerName: 'TEMPLATE ID', width: 110 },
+    { field: 'templateType', headerName: 'TEMPLATE TYPE', width: 130, headerAlign: 'center', align: 'center', renderCell: (params) => renderType(params.value) },
     { field: 'templateDescription', headerName: 'DESCRIPTION', width: 200 },
-    { field: 'language', headerName: 'LANGUAGE', width: 150 },
+    { field: 'language', headerName: 'LANGUAGE', width: 100 },
     { field: 'subjectTemplate', headerName: 'SUBJECT TEMPLATE', width: 200 },
-    { field: 'bodyTemplate', headerName: 'BODY TEMPLATE', width: 260 }
+    { field: 'bodyTemplate', headerName: 'BODY TEMPLATE', width: 300 }
   ];
 
+  const [loading, setLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 100 });
+  const [templateTableRows, setTemplateTableRows] = useState([]);
+  const [totalItems, setTotalItems] = useState(0); // Track total items for pagination
 
-  const rows = [
-    { id: 1, templateType: 'SMS', templateDescription: "OTP", language: "ENG", subjectTemplate: null, bodyTemplate: "Hi,\n This is your OTP ${otp}" },
-    { id: 2, templateType: 'SMS', templateDescription: "OTP", language: "ENG", subjectTemplate: null, bodyTemplate: "Hi,\n This is your OTP ${otp}" }
+  const retrieveTemplateRepository = async () => {
+    setLoading(true);
 
-  ];
+    /* load configurations */
+    if (!config) {
+      console.error('Configuration is not loaded yet.');
+      return;
+    }
 
-  const paginationModel = { page: 0, pageSize: 10 };
+    try {
+      const response = await axios.get(`${config.apiBaseUrl}${config.getTemplateRepository}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
+
+      const data = response.data;
+      console.log('Success:', data);
+
+      //Map response to the structure needed for useState
+      const newNotificationTableRows = data.content.map((templateRow, index) => ({
+        id: index + 1, // Incremental id based on index
+        templateType: templateRow.templateType?.toString() ?? "",
+        templateId: templateRow.smsTemplate?.templateId || templateRow.emailTemplate?.templateId || "",
+        templateDescription: templateRow.smsTemplate?.templateDescription || templateRow.emailTemplate?.templateDescription || "",
+        language: templateRow.smsTemplate?.language || templateRow.emailTemplate?.language || "",
+        subjectTemplate: templateRow.emailTemplate?.subjectTemplate || "",
+        bodyTemplate: templateRow.smsTemplate?.bodyTemplate || templateRow.emailTemplate?.bodyTemplate || ""
+      }));
+
+
+      // Update the state, keeping the default value as the first element
+      setTemplateTableRows(newNotificationTableRows);
+      setTotalItems(data.totalItems);
+
+
+    } catch (error) {
+      console.error('Error:', error);
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Template repository loading failed. Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('Template repository  loading failed. No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+
+  }
+
+  //Fetch notifications on component mount and when pagination model changes
+  useEffect(() => {
+    if (config) {
+      retrieveTemplateRepository(paginationModel.page, paginationModel.pageSize);
+    }
+  }, [config, paginationModel]);
+
 
 
   return (
@@ -414,7 +490,7 @@ const Templates = () => {
 
               <Stack direction="row" >
                 <Tooltip title="Refresh">
-                  <IconButton aria-label="refresh">
+                  <IconButton aria-label="refresh" onClick={() => retrieveTemplateRepository()}>
                     <RefreshIcon />
                   </IconButton>
                 </Tooltip>
@@ -436,10 +512,17 @@ const Templates = () => {
 
             <Box sx={{ height: 407, width: '100%' }}>
               <DataGrid
-                rows={rows}
+                rows={templateTableRows}
                 columns={columns}
-                initialState={{ pagination: { paginationModel } }}
-                pageSizeOptions={[5, 10]}
+                loading={loading}
+                pagination
+                paginationMode="server"
+                rowCount={totalItems}
+                pageSize={paginationModel.pageSize}
+                page={paginationModel.page}
+                onPaginationModelChange={(newPaginationModel) => {
+                  setPaginationModel(newPaginationModel);
+                }}
                 checkboxSelection
                 sx={{ border: 0 }}
               />

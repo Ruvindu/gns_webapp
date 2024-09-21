@@ -354,7 +354,6 @@ const NotificationManager = () => {
     }
 
     try {
-      console.log(paginationModel.page, paginationModel.pageSize);
       const response = await axios.get(`${config.apiBaseUrl}${config.getAllNotifications}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
 
 
