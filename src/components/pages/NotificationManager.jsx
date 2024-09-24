@@ -265,7 +265,7 @@ const NotificationManager = () => {
       return <Chip label="High" size="small" color="error" variant="outlined" />
 
     } else if (priority === '2') {
-      return <Chip label="Low" size="small" color="default" variant="outlined" />
+      return <Chip label="Low" size="small" color="warning" variant="outlined" />
     }
     else {
       return <Chip label="Unknown" size="small" color="default" variant="outlined" />

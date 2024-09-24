@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useConfig from '../../useConfig';
-import { Box, Typography, Card, CardContent, TextField, Button, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert, Chip } from '@mui/material';
+import {
+  Box, Typography, Card, CardContent, TextField, Button, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert, Chip, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText
+} from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
 import SaveIcon from '@mui/icons-material/Save';
@@ -40,7 +42,6 @@ const Templates = () => {
     });
   };
 
-
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -51,6 +52,31 @@ const Templates = () => {
       open: false,
     }));
   };
+
+  /* Dialog box */
+  const [openDialog, setOpenDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    callback: () => { }
+  });
+
+  const handleCloseDialog = () => {
+    setOpenDialog(prevState => ({
+      ...prevState,
+      open: false,
+    }));
+  };
+
+  const handleOpenDialog = (dialogTitle, dialogContent, customAction) => {
+    setOpenDialog({
+      open: true,
+      title: dialogTitle,
+      content: dialogContent,
+      callback: customAction
+    });
+  };
+
 
 
   /* Template Form Consts */
@@ -137,6 +163,7 @@ const Templates = () => {
       }
     } finally {
       handleCloseBackDrop();
+      retrieveTemplateRepository();
     }
 
   };
@@ -265,6 +292,7 @@ const Templates = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 100 });
   const [templateTableRows, setTemplateTableRows] = useState([]);
   const [totalItems, setTotalItems] = useState(0); // Track total items for pagination
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const retrieveTemplateRepository = async () => {
     setLoading(true);
@@ -309,7 +337,7 @@ const Templates = () => {
         );
       } else if (error.request) {
         // The request was made but no response was received
-        handleOpenSnackbar('Template repository  loading failed. No response received from server', 'error');
+        handleOpenSnackbar('Template repository loading failed. No response received from server', 'error');
       } else {
         // Something else happened while setting up the request
         handleOpenSnackbar(error.message, 'error');
@@ -327,6 +355,43 @@ const Templates = () => {
     }
   }, [config, paginationModel]);
 
+
+  const editSelectedRow = () => {
+    if (selectedRows.length === 1) {
+      //get first selecyted row
+      const rowToEdit = templateTableRows.find((templateTableRows) => templateTableRows.id === selectedRows[0]);
+
+      setFormData({
+        templateId: rowToEdit.templateId,
+        templateType: rowToEdit.templateType,
+        subjectTemplate: rowToEdit.subjectTemplate,
+        bodyTemplate: rowToEdit.bodyTemplate,
+        templateDescription: rowToEdit.templateDescription,
+        language: rowToEdit.language
+      });
+
+    } else {
+      handleOpenSnackbar('Can not edit multiple rows. Select a single row', 'warning');
+    }
+  }
+
+  const deleteSelectedRows = () => {
+    handleOpenDialog(
+      "Are you sure want to delete this templates?",
+      "This action cannot be undone.",
+      deleteTemplates
+    );
+  }
+
+  const deleteTemplates = async () => {
+    handleOpenBackDrop();
+    handleCloseDialog();
+    console.log("Custom action executed!");
+    console.log(selectedRows);
+
+    const rowToEdit = templateTableRows.find((templateTableRows) => templateTableRows.id === selectedRows[0]);
+    handleCloseBackDrop();
+  };
 
 
   return (
@@ -351,12 +416,31 @@ const Templates = () => {
         </Alert>
       </Snackbar>
 
+      <Dialog
+        open={openDialog.open}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {openDialog.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {openDialog.content}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>No</Button>
+          <Button onClick={openDialog.callback} autoFocus>Yes</Button>
+        </DialogActions>
+      </Dialog>
 
 
 
       <Grid size={12}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'gray' }}>
-          Templates Repository
+          Template Repository
         </Typography>
       </Grid>
 
@@ -496,13 +580,13 @@ const Templates = () => {
                 </Tooltip>
 
                 <Tooltip title="Edit">
-                  <IconButton aria-label="edit">
+                  <IconButton aria-label="edit" onClick={() => editSelectedRow()}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
 
                 <Tooltip title="Delete">
-                  <IconButton aria-label="delete">
+                  <IconButton aria-label="delete" onClick={() => deleteSelectedRows()}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
@@ -521,9 +605,16 @@ const Templates = () => {
                 pageSize={paginationModel.pageSize}
                 page={paginationModel.page}
                 onPaginationModelChange={(newPaginationModel) => {
+                  console.log(newPaginationModel);
                   setPaginationModel(newPaginationModel);
                 }}
                 checkboxSelection
+                onRowSelectionModelChange={(newSelection) => {
+                  setSelectedRows(newSelection);
+                }}
+                onSelectionModelChange={(newSelection) => {
+                  console.log(newSelection);
+                }}
                 sx={{ border: 0 }}
               />
             </Box>
