@@ -386,11 +386,51 @@ const Templates = () => {
   const deleteTemplates = async () => {
     handleOpenBackDrop();
     handleCloseDialog();
-    console.log("Custom action executed!");
-    console.log(selectedRows);
 
-    const rowToEdit = templateTableRows.find((templateTableRows) => templateTableRows.id === selectedRows[0]);
-    handleCloseBackDrop();
+    // Create an array to hold the data
+    let dataToDelete = selectedRows.map(selectedRowId => {
+      // Find the corresponding row in the templateTableRows
+      const rowToDelete = templateTableRows.find(row => row.id === selectedRowId);
+      return {
+        templateType: rowToDelete.templateType,
+        templateId: rowToDelete.templateId
+      };
+    });
+
+    console.log(dataToDelete);
+
+
+    try {
+
+      const response = await axios.delete(`${config.apiBaseUrl}${config.deleteAnyTemplate}`, {
+        data: dataToDelete
+      });
+
+      const data = response.data;
+      console.log('Success:', data);
+
+
+    } catch (error) {
+      console.error('Error:', error);
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Templates delete failed. Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('Templates delete failed. No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'error');
+      }
+    } finally {
+      handleCloseBackDrop();
+      retrieveTemplateRepository()
+    }
+
   };
 
 

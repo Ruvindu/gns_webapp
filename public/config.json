@@ -8,6 +8,7 @@
     "getAllSmsTemplates": "/templates/get-all-sms-template",
     "getAllEmailTemplates": "/templates/get-all-email-template",
     "getTemplateRepository": "/templates/get-template-repository",
+    "deleteAnyTemplate": "/templates/delete-any-template",
 
     "createNotification": "/notifications/create-notification",
     "getAllNotifications": "/notifications/get-all-notifications"
