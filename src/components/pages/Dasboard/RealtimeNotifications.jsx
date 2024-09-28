@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Chip, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
@@ -7,10 +7,12 @@ import EmailIcon from '@mui/icons-material/Email';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import DoneIcon from '@mui/icons-material/Done';
+import useWsHandler from '../../../useWsHandler';
 
 
 const RealtimeNotifications = () => {
 
+    const wsMessages = useWsHandler();
 
     // Custom function to render
     const renderType = (type) => {
@@ -116,6 +118,14 @@ const RealtimeNotifications = () => {
         { id: 4, type: 2, priority: 1, status: 4, time: 1727503737313 },
         { id: 5, type: 2, priority: 1, status: -1, time: 1727503737313 }
     ]
+
+
+    useEffect(() => {
+        // Only log when there are messages in the array
+        if (wsMessages.length > 0) {
+            console.log(wsMessages);
+        }
+    }, [wsMessages]);
 
     return (
         <Card variant='outlined' sx={{ minHeight: "340px" }}>

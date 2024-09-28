@@ -156,6 +156,7 @@ const NotificationManager = () => {
       }
     } finally {
       handleCloseBackDrop();
+      retrieveAllNotifications();
     }
 
   };
