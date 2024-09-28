@@ -357,8 +357,13 @@ const Templates = () => {
 
 
   const editSelectedRow = () => {
+    if (!selectedRows.length > 0) {
+      handleOpenSnackbar('No templates seleted', 'warning');
+      return;
+    }
+
     if (selectedRows.length === 1) {
-      //get first selecyted row
+      //get first selected row
       const rowToEdit = templateTableRows.find((templateTableRows) => templateTableRows.id === selectedRows[0]);
 
       setFormData({
@@ -376,6 +381,12 @@ const Templates = () => {
   }
 
   const deleteSelectedRows = () => {
+
+    if (!selectedRows.length > 0) {
+      handleOpenSnackbar('No templates seleted', 'warning');
+      return;
+    }
+
     handleOpenDialog(
       "Are you sure want to delete this templates?",
       "This action cannot be undone.",
