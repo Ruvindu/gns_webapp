@@ -1,38 +1,49 @@
 import { useEffect, useState } from 'react';
+import useConfig from './useConfig';
+
+// Store WebSocket and messages in a global scope
+let socket;
+let listeners = [];
+// let wsMessagesCache = [];
 
 const useWsHandler = () => {
-    const [wsMessages, setWsMessages] = useState([]);
+    const config = useConfig();
+    const [wsMessages, setWsMessages] = useState();
 
     useEffect(() => {
-        // Setting up WebSocket connection
-        const socket = new WebSocket('ws://localhost:8081/api/real-time-notification-stream');
+        if (config && !socket) {
+            socket = new WebSocket(`${config.wsApiBaseUrl}${config.realtimeDataChannel}`);
 
-        // Handling incoming messages from WebSocket
-        socket.onmessage = (event) => {
-            const newMessage = event.data;
-            console.log(newMessage);
-            setWsMessages((prevMessages) => [...prevMessages, newMessage]);
-        };
+            socket.onmessage = (event) => {
+                const newMessage = event.data;
+                listeners.forEach((listener) => listener(newMessage));
+            };
 
-        socket.onopen = () => {
-            console.log('WebSocket connected');
-        };
+            socket.onopen = () => {
+                console.log('WebSocket connected');
+            };
 
-        socket.onclose = () => {
-            console.log('WebSocket disconnected');
-        };
+            socket.onclose = () => {
+                console.log('WebSocket disconnected');
+                socket = null;
+            };
 
-        socket.onerror = (error) => {
-            console.log('WebSocket error: ', error);
-        };
+            socket.onerror = (error) => {
+                console.log('WebSocket error: ', error);
+            };
+        }
 
-        // Cleanup function to close WebSocket on component unmount
+        if (!listeners.includes(setWsMessages)) {
+            listeners.push(setWsMessages);
+        }
+
         return () => {
-            socket.close();
+            listeners = listeners.filter(listener => listener !== setWsMessages);
         };
-    }, []);
+    }, [config]);
 
     return wsMessages;
 };
+
 
 export default useWsHandler;

@@ -120,12 +120,12 @@ const RealtimeNotifications = () => {
     ]
 
 
-    useEffect(() => {
-        // Only log when there are messages in the array
-        if (wsMessages.length > 0) {
-            console.log(wsMessages);
-        }
-    }, [wsMessages]);
+    // useEffect(() => {
+    //     // Only log when there are messages in the array
+    //     if (wsMessages.length > 0) {
+    //         console.log(wsMessages);
+    //     }
+    // }, [wsMessages]);
 
     return (
         <Card variant='outlined' sx={{ minHeight: "340px" }}>

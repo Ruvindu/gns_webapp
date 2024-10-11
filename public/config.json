@@ -1,5 +1,8 @@
 {
-    "apiBaseUrl": "http://localhost:8081/api",
+    "restProtocol":"http",
+    "contextPath":"/api",
+    "restApiBaseUrl": "http://localhost:8081/api",
+    "wsApiBaseUrl": "ws://localhost:8081/api",
     
     "createSmsTemplate": "/templates/create-sms-template",
     "updateSmsTemplate": "/templates/update-sms-template",
@@ -11,6 +14,10 @@
     "deleteAnyTemplate": "/templates/delete-any-template",
 
     "createNotification": "/notifications/create-notification",
-    "getAllNotifications": "/notifications/get-all-notifications"
+    "getAllNotifications": "/notifications/get-all-notifications",
+
+    "realtimeDataChannel": "/realtime-data-channel",
+
+    "actuatorShutdown": "/actuator/shutdown "
   }
   

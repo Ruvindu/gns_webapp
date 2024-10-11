@@ -113,22 +113,22 @@ const Templates = () => {
 
       if (templateType === "1") {
         if (formData.templateId !== '') {
-          response = await axios.put(`${config.apiBaseUrl}${config.updateSmsTemplate}`,
+          response = await axios.put(`${config.restApiBaseUrl}${config.updateSmsTemplate}`,
             dataToSend,
           );
         } else {
-          response = await axios.post(`${config.apiBaseUrl}${config.createSmsTemplate}`,
+          response = await axios.post(`${config.restApiBaseUrl}${config.createSmsTemplate}`,
             dataToSend,
           );
         }
       } else {
         if (formData.templateId !== '') {
-          response = await axios.put(`${config.apiBaseUrl}${config.updateEmailTemplate}`,
+          response = await axios.put(`${config.restApiBaseUrl}${config.updateEmailTemplate}`,
             dataToSend,
           );
         }
         else {
-          response = await axios.post(`${config.apiBaseUrl}${config.createEmailTemplate}`,
+          response = await axios.post(`${config.restApiBaseUrl}${config.createEmailTemplate}`,
             dataToSend,
           );
         }
@@ -304,7 +304,7 @@ const Templates = () => {
     }
 
     try {
-      const response = await axios.get(`${config.apiBaseUrl}${config.getTemplateRepository}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
+      const response = await axios.get(`${config.restApiBaseUrl}${config.getTemplateRepository}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
 
       const data = response.data;
       console.log('Success:', data);
@@ -413,7 +413,7 @@ const Templates = () => {
 
     try {
 
-      const response = await axios.delete(`${config.apiBaseUrl}${config.deleteAnyTemplate}`, {
+      const response = await axios.delete(`${config.restApiBaseUrl}${config.deleteAnyTemplate}`, {
         data: dataToDelete
       });
 
