@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useConfig from '../../useConfig';
-import { Typography, Snackbar, Alert } from '@mui/material';
+import { Typography, Snackbar, Alert, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import NotificationSummary from './Dasboard/NotificationSummary';
 import RealtimeNotifications from './Dasboard/RealtimeNotifications';
@@ -40,6 +40,30 @@ const DashBoard = () => {
     }));
   };
 
+  /* Dialog box */
+  const [openDialog, setOpenDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    callback: () => { }
+  });
+
+  const handleCloseDialog = () => {
+    setOpenDialog(prevState => ({
+      ...prevState,
+      open: false,
+    }));
+  };
+
+  const handleOpenDialog = (dialogTitle, dialogContent, customAction) => {
+    setOpenDialog({
+      open: true,
+      title: dialogTitle,
+      content: dialogContent,
+      callback: customAction
+    });
+  };
+
   return (
     <Grid container spacing={3} padding={5}>
 
@@ -54,6 +78,27 @@ const DashBoard = () => {
           {openSnackbar.message}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={openDialog.open}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {openDialog.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {openDialog.content}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>No</Button>
+          <Button onClick={openDialog.callback} autoFocus>Yes</Button>
+        </DialogActions>
+      </Dialog>
+
 
 
       <Grid size={12}>
@@ -79,7 +124,7 @@ const DashBoard = () => {
       </Grid>
 
       <Grid size={{ xs: 12, md: 6 }} marginTop={2}>
-        <ComponentMonitoring  config={config} handleOpenSnackbar={handleOpenSnackbar}/>
+        <ComponentMonitoring config={config} handleOpenSnackbar={handleOpenSnackbar} handleOpenDialog={handleOpenDialog} handleCloseDialog={handleCloseDialog} />
       </Grid>
 
     </Grid >

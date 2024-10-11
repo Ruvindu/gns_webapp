@@ -7,13 +7,14 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import useWsHandler from '../../../useWsHandler';
 
 
-const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
+const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, handleCloseDialog }) => {
 
     const wsMessages = useWsHandler();
 
     const [activeProducerComponents, setActiveProducerComponents] = useState([]);
     const [activeSMSWorkerComponents, setActiveSMSWorkerComponents] = useState([]);
     const [activeEmailWorkerComponents, setActiveEmailWorkerComponents] = useState([]);
+    const [toShutDown, setToShutDown] = useState();
 
 
     const createComponentId = (jsonMsg) => {
@@ -28,7 +29,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
             nodeType: jsonMsg.head.nodeType,
             status: "online",
             upTime: 0,
-            health: "UP"
+            health: "UP",
+            lastUpdatedAt: new Date()
         }
         return component;
     }
@@ -38,7 +40,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
     const updateUptime = (prevComponents, jsonMsg, compId) => {
         return prevComponents.map(component => {
             if (component.componentId === compId) {
-                return { ...component, upTime: jsonMsg.data.uptime };
+                return { ...component, upTime: jsonMsg.data.uptime, lastUpdatedAt: new Date() };
             }
             return component;
         });
@@ -47,13 +49,13 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
     const updateHealth = (prevComponents, jsonMsg, compId) => {
         return prevComponents.map(component => {
             if (component.componentId === compId) {
-                return { ...component, health: jsonMsg.data.status };
+                return { ...component, health: jsonMsg.data.status, lastUpdatedAt: new Date() };
             }
             return component;
         });
     }
 
-    const initiateComponent = (jsonMsg) => {
+    const initiateAndUpdateComponents = (jsonMsg) => {
         const newComponent = createComponentData(jsonMsg);
 
         if (newComponent.nodeType === "gns-producer") {
@@ -105,10 +107,19 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
         return `${formattedHrs}:${formattedMins}:${formattedSecs}`;
     }
 
+    const initiateShutdown = (url) => {
+        setToShutDown(url);
+        handleOpenDialog(
+            "Are you sure you want to shut down this component?",
+            "Currently processing notifications will not be sent. ",
+            shutdownComponent
+        );
+    }
 
-    const shutdownComponent = async (url) => {
+    const shutdownComponent = async () => {
+        handleCloseDialog();
         try {
-            const response = await axios.post(`${url}`);
+            const response = await axios.post(`${toShutDown}`);
             console.log('Success:', response.data);
 
             handleOpenSnackbar(response.data.message, 'success');
@@ -131,18 +142,62 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
         }
     }
 
+    const removeDeactiveComponents = () => {
+
+        activeProducerComponents.forEach((component, index) => {
+            if (component.lastUpdatedAt instanceof Date) {
+                let timeDiff = new Date() - component.lastUpdatedAt;
+                if (timeDiff > 3000) {
+                    activeProducerComponents.splice(index, 1);
+                }
+            }
+        });
+
+        activeSMSWorkerComponents.forEach((component, index) => {
+            if (component.lastUpdatedAt instanceof Date) {
+                let timeDiff = new Date() - component.lastUpdatedAt;
+                if (timeDiff > 3000) {
+                    activeSMSWorkerComponents.splice(index, 1);
+                }
+            }
+        });
+
+        activeEmailWorkerComponents.forEach((component, index) => {
+            if (component.lastUpdatedAt instanceof Date) {
+                let timeDiff = new Date() - component.lastUpdatedAt;
+                if (timeDiff > 3000) {
+                    activeEmailWorkerComponents.splice(index, 1);
+                }
+            }
+        });
+
+    };
+
+
 
     useEffect(() => {
         try {
             if (wsMessages !== undefined) {
                 let msg = JSON.parse(wsMessages);
 
-                initiateComponent(msg);
+                initiateAndUpdateComponents(msg);
+                removeDeactiveComponents()
             }
         } catch (error) {
             console.warn('Error parsing WebSocket message:', error);
         }
     }, [wsMessages]);
+
+
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         console.log(activeProducerComponents);
+    //         // console.log(activeProducerComponents);
+    //         // updateComponentStatus(activeProducerComponents);
+    //     }, 3000); // Runs every 2 seconds
+
+    //     return () => clearInterval(interval); // Cleanup on component unmount
+    // }, [wsMessages]);
 
     return (
         <Card variant='outlined' sx={{ minHeight: "490px" }}>
@@ -190,22 +245,22 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
                                     </TableHead>
                                     <TableBody>
                                         {config && activeProducerComponents.length > 0 ? (
-                                            activeProducerComponents.map((row) => (
-                                                <TableRow key={row.componentId}>
-                                                    <TableCell>{row.host}</TableCell>
-                                                    <TableCell align="center">{row.port}</TableCell>
+                                            activeProducerComponents.map((produceRow) => (
+                                                <TableRow key={produceRow.componentId}>
+                                                    <TableCell>{produceRow.host}</TableCell>
+                                                    <TableCell align="center">{produceRow.port}</TableCell>
                                                     <TableCell align="center">
                                                         <Chip
-                                                            label={row.status}
+                                                            label={produceRow.status}
                                                             variant="outlined"
-                                                            color={row.health === "UP" ? "success" : "warning"}
+                                                            color={produceRow.health === "UP" ? "success" : "warning"}
                                                             size="small"
                                                         />
                                                     </TableCell>
-                                                    <TableCell align="center">{formatTime(row.upTime)}</TableCell>
+                                                    <TableCell align="center">{formatTime(produceRow.upTime)}</TableCell>
                                                     <TableCell align="center">
                                                         <Tooltip title="Shutdown">
-                                                            <IconButton size="medium" color="error" onClick={() => shutdownComponent(`${config.restProtocol}://${row.componentId.split(':')[0]}:${row.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
+                                                            <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${produceRow.componentId.split(':')[0]}:${produceRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
                                                                 <PowerSettingsNewIcon />
                                                             </IconButton>
                                                         </Tooltip>
@@ -220,7 +275,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
                                         ) : (
                                             <TableRow>
                                                 <TableCell colSpan={5} align="center">
-                                                    No active nodes
+                                                    No active producer servers
                                                 </TableCell>
                                             </TableRow>
                                         )}
@@ -268,23 +323,23 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {activeSMSWorkerComponents.length > 0 ? (
-                                            activeSMSWorkerComponents.map((row) => (
-                                                <TableRow key={row.componentId}>
-                                                    <TableCell>{row.host}</TableCell>
-                                                    <TableCell align="center">{row.port}</TableCell>
+                                        {config && activeSMSWorkerComponents.length > 0 ? (
+                                            activeSMSWorkerComponents.map((smsWorkerRow) => (
+                                                <TableRow key={smsWorkerRow.componentId}>
+                                                    <TableCell>{smsWorkerRow.host}</TableCell>
+                                                    <TableCell align="center">{smsWorkerRow.port}</TableCell>
                                                     <TableCell align="center">
                                                         <Chip
-                                                            label={row.status}
+                                                            label={smsWorkerRow.status}
                                                             variant="outlined"
-                                                            color={row.health === "UP" ? "success" : "warning"}
+                                                            color={smsWorkerRow.health === "UP" ? "success" : "warning"}
                                                             size="small"
                                                         />
                                                     </TableCell>
-                                                    <TableCell align="center">{formatTime(row.upTime)}</TableCell>
+                                                    <TableCell align="center">{formatTime(smsWorkerRow.upTime)}</TableCell>
                                                     <TableCell align="center">
                                                         <Tooltip title="Shutdown">
-                                                            <IconButton size="medium" color="error" onClick={() => shutdownComponent(`${config.restProtocol}://${row.componentId.split(':')[0]}:${row.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
+                                                            <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${smsWorkerRow.componentId.split(':')[0]}:${smsWorkerRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
                                                                 <PowerSettingsNewIcon />
                                                             </IconButton>
                                                         </Tooltip>
@@ -299,7 +354,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
                                         ) : (
                                             <TableRow>
                                                 <TableCell colSpan={5} align="center">
-                                                    No active nodes
+                                                    No active sms workers
                                                 </TableCell>
                                             </TableRow>
                                         )}
@@ -346,23 +401,23 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {activeEmailWorkerComponents.length > 0 ? (
-                                            activeEmailWorkerComponents.map((row) => (
-                                                <TableRow key={row.componentId}>
-                                                    <TableCell>{row.host}</TableCell>
-                                                    <TableCell align="center">{row.port}</TableCell>
+                                        {config && activeEmailWorkerComponents.length > 0 ? (
+                                            activeEmailWorkerComponents.map((emailWorkerRow) => (
+                                                <TableRow key={emailWorkerRow.componentId}>
+                                                    <TableCell>{emailWorkerRow.host}</TableCell>
+                                                    <TableCell align="center">{emailWorkerRow.port}</TableCell>
                                                     <TableCell align="center">
                                                         <Chip
-                                                            label={row.status}
+                                                            label={emailWorkerRow.status}
                                                             variant="outlined"
-                                                            color={row.health === "UP" ? "success" : "warning"}
+                                                            color={emailWorkerRow.health === "UP" ? "success" : "warning"}
                                                             size="small"
                                                         />
                                                     </TableCell>
-                                                    <TableCell align="center">{formatTime(row.upTime)}</TableCell>
+                                                    <TableCell align="center">{formatTime(emailWorkerRow.upTime)}</TableCell>
                                                     <TableCell align="center">
                                                         <Tooltip title="Shutdown">
-                                                            <IconButton size="medium" color="error" onClick={() => shutdownComponent(`${config.restProtocol}://${row.componentId.split(':')[0]}:${row.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
+                                                            <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${emailWorkerRow.componentId.split(':')[0]}:${emailWorkerRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
                                                                 <PowerSettingsNewIcon />
                                                             </IconButton>
                                                         </Tooltip>
@@ -377,7 +432,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar }) => {
                                         ) : (
                                             <TableRow>
                                                 <TableCell colSpan={5} align="center">
-                                                    No active nodes
+                                                    No active email workers
                                                 </TableCell>
                                             </TableRow>
                                         )}
