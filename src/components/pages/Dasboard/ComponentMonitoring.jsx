@@ -348,11 +348,6 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                                                 <PowerSettingsNewIcon />
                                                             </IconButton>
                                                         </Tooltip>
-                                                        {/* <Tooltip title="More">
-                                                            <IconButton size="medium" color="default">
-                                                                <MoreVertIcon />
-                                                            </IconButton>
-                                                        </Tooltip> */}
                                                     </TableCell>
                                                 </TableRow>
                                             ))
@@ -428,11 +423,6 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                                         <Tooltip title="Shutdown">
                                                             <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${emailWorkerRow.componentId.split(':')[0]}:${emailWorkerRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
                                                                 <PowerSettingsNewIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="More">
-                                                            <IconButton size="medium" color="default">
-                                                                <MoreVertIcon />
                                                             </IconButton>
                                                         </Tooltip>
                                                     </TableCell>
