@@ -113,22 +113,22 @@ const Templates = () => {
 
       if (templateType === "1") {
         if (formData.templateId !== '') {
-          response = await axios.put(`${config.restApiBaseUrl}${config.updateSmsTemplate}`,
+          response = await axios.put(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.updateSmsTemplate}`,
             dataToSend,
           );
         } else {
-          response = await axios.post(`${config.restApiBaseUrl}${config.createSmsTemplate}`,
+          response = await axios.post(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.createSmsTemplate}`,
             dataToSend,
           );
         }
       } else {
         if (formData.templateId !== '') {
-          response = await axios.put(`${config.restApiBaseUrl}${config.updateEmailTemplate}`,
+          response = await axios.put(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.updateEmailTemplate}`,
             dataToSend,
           );
         }
         else {
-          response = await axios.post(`${config.restApiBaseUrl}${config.createEmailTemplate}`,
+          response = await axios.post(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.createEmailTemplate}`,
             dataToSend,
           );
         }
@@ -304,7 +304,7 @@ const Templates = () => {
     }
 
     try {
-      const response = await axios.get(`${config.restApiBaseUrl}${config.getTemplateRepository}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
+      const response = await axios.get(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.getTemplateRepository}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
 
       const data = response.data;
       console.log('Success:', data);
@@ -413,7 +413,7 @@ const Templates = () => {
 
     try {
 
-      const response = await axios.delete(`${config.restApiBaseUrl}${config.deleteAnyTemplate}`, {
+      const response = await axios.delete(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.deleteAnyTemplate}`, {
         data: dataToDelete
       });
 

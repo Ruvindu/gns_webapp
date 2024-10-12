@@ -15,7 +15,7 @@ const useWsHandler = () => {
     useEffect(() => {
         const connectWebSocket = () => {
             if (config && !socket) {
-                socket = new WebSocket(`${config.wsApiBaseUrl}${config.realtimeDataChannel}`);
+                socket = new WebSocket(`${config.wsProtocol}://${config.host}:${config.port}${config.contextPath}${config.realtimeDataChannel}`);
 
                 socket.onmessage = (event) => {
                     const newMessage = event.data;

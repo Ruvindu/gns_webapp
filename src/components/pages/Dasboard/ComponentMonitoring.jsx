@@ -67,7 +67,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                     return [...prevComponents, newComponent];
                 } else {
                     if (jsonMsg.head.msgType === 3) return updateMetrics(prevComponents, jsonMsg, newComponent.componentId);
-                    if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
+                    else if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
+                    else return [...prevComponents]; //return currnet list if comes not checked msgType other wise useState array will null eg: msgType:1
                 }
             });
         } if (newComponent.nodeType === "gns-sms-worker") {
@@ -77,7 +78,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                     return [...prevComponents, newComponent];
                 } else {
                     if (jsonMsg.head.msgType === 3) return updateMetrics(prevComponents, jsonMsg, newComponent.componentId);
-                    if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
+                    else if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
+                    else return [...prevComponents];
                 }
             });
         } if (newComponent.nodeType === "gns-email-worker") {
@@ -87,7 +89,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                     return [...prevComponents, newComponent];
                 } else {
                     if (jsonMsg.head.msgType === 3) return updateMetrics(prevComponents, jsonMsg, newComponent.componentId);
-                    if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
+                    else if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
+                    else return [...prevComponents];
                 }
             });
         }
@@ -190,16 +193,6 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
         }
     }, [wsMessages]);
 
-
-    // useEffect(() => {
-    //     const interval = setInterval(() => {
-    //         console.log(activeProducerComponents);
-    //         // console.log(activeProducerComponents);
-    //         // updateComponentStatus(activeProducerComponents);
-    //     }, 3000); // Runs every 2 seconds
-
-    //     return () => clearInterval(interval); // Cleanup on component unmount
-    // }, [wsMessages]);
 
     return (
         <Card variant='outlined' sx={{ minHeight: "490px" }}>

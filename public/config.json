@@ -1,8 +1,9 @@
 {
     "restProtocol":"http",
+    "wsProtocol":"ws",
+    "host": "localhost",
+    "port": "8081",
     "contextPath":"/api",
-    "restApiBaseUrl": "http://localhost:8081/api",
-    "wsApiBaseUrl": "ws://localhost:8081/api",
     
     "createSmsTemplate": "/templates/create-sms-template",
     "updateSmsTemplate": "/templates/update-sms-template",

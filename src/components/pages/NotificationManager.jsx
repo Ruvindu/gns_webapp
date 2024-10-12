@@ -124,7 +124,7 @@ const NotificationManager = () => {
     });
 
     try {
-      const response = await axios.post(`${config.restApiBaseUrl}${config.createNotification}`,
+      const response = await axios.post(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.createNotification}`,
         formDataToSend,
       );
 
@@ -193,9 +193,9 @@ const NotificationManager = () => {
       let response = null;
 
       if (notificationType === '1') { // SMS
-        response = await axios.get(`${config.restApiBaseUrl}${config.getAllSmsTemplates}`);
+        response = await axios.get(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.getAllSmsTemplates}`);
       } else {
-        response = await axios.get(`${config.restApiBaseUrl}${config.getAllEmailTemplates}`);
+        response = await axios.get(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.getAllEmailTemplates}`);
       }
 
       const data = response.data;
@@ -355,7 +355,7 @@ const NotificationManager = () => {
     }
 
     try {
-      const response = await axios.get(`${config.restApiBaseUrl}${config.getAllNotifications}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
+      const response = await axios.get(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.getAllNotifications}?page=${paginationModel.page}&size=${paginationModel.pageSize}`);
 
 
       const data = response.data;

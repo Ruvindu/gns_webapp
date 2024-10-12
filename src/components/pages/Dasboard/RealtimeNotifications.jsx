@@ -12,7 +12,6 @@ import useWsHandler from '../../../useWsHandler';
 
 const RealtimeNotifications = () => {
 
-    const wsMessages = useWsHandler();
 
     // Custom function to render
     const renderType = (type) => {
@@ -119,13 +118,6 @@ const RealtimeNotifications = () => {
         { id: 5, type: 2, priority: 1, status: -1, time: 1727503737313 }
     ]
 
-
-    // useEffect(() => {
-    //     // Only log when there are messages in the array
-    //     if (wsMessages.length > 0) {
-    //         console.log(wsMessages);
-    //     }
-    // }, [wsMessages]);
 
     return (
         <Card variant='outlined' sx={{ minHeight: "340px" }}>
