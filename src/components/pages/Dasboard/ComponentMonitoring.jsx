@@ -29,6 +29,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
             nodeType: jsonMsg.head.nodeType,
             status: "online",
             upTime: 0,
+            cpu: 0,
+            memory: 0,
             health: "UP",
             lastUpdatedAt: new Date()
         }
@@ -37,10 +39,10 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
 
 
 
-    const updateUptime = (prevComponents, jsonMsg, compId) => {
+    const updateMetrics = (prevComponents, jsonMsg, compId) => {
         return prevComponents.map(component => {
             if (component.componentId === compId) {
-                return { ...component, upTime: jsonMsg.data.uptime, lastUpdatedAt: new Date() };
+                return { ...component, upTime: jsonMsg.data.uptime, cpu: jsonMsg.data.cpuUsage, memory: jsonMsg.data.memoryUsage, lastUpdatedAt: new Date() };
             }
             return component;
         });
@@ -64,7 +66,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                 if (!exists) {
                     return [...prevComponents, newComponent];
                 } else {
-                    if (jsonMsg.head.msgType === 3) return updateUptime(prevComponents, jsonMsg, newComponent.componentId);
+                    if (jsonMsg.head.msgType === 3) return updateMetrics(prevComponents, jsonMsg, newComponent.componentId);
                     if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
                 }
             });
@@ -74,7 +76,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                 if (!exists) {
                     return [...prevComponents, newComponent];
                 } else {
-                    if (jsonMsg.head.msgType === 3) return updateUptime(prevComponents, jsonMsg, newComponent.componentId);
+                    if (jsonMsg.head.msgType === 3) return updateMetrics(prevComponents, jsonMsg, newComponent.componentId);
                     if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
                 }
             });
@@ -84,7 +86,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                 if (!exists) {
                     return [...prevComponents, newComponent];
                 } else {
-                    if (jsonMsg.head.msgType === 3) return updateUptime(prevComponents, jsonMsg, newComponent.componentId);
+                    if (jsonMsg.head.msgType === 3) return updateMetrics(prevComponents, jsonMsg, newComponent.componentId);
                     if (jsonMsg.head.msgType === 2) return updateHealth(prevComponents, jsonMsg, newComponent.componentId);
                 }
             });
@@ -240,6 +242,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                             <TableCell align="center">Port</TableCell>
                                             <TableCell align="center">Status</TableCell>
                                             <TableCell align="center">Uptime</TableCell>
+                                            <TableCell align="center">CPU</TableCell>
+                                            <TableCell align="center">Memory</TableCell>
                                             <TableCell align="center">Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -258,15 +262,12 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                                         />
                                                     </TableCell>
                                                     <TableCell align="center">{formatTime(produceRow.upTime)}</TableCell>
+                                                    <TableCell align="center">{produceRow.cpu.toFixed(2) + '%'}</TableCell>
+                                                    <TableCell align="center">{produceRow.memory.toFixed(2) + '%'}</TableCell>
                                                     <TableCell align="center">
                                                         <Tooltip title="Shutdown">
                                                             <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${produceRow.componentId.split(':')[0]}:${produceRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
                                                                 <PowerSettingsNewIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="More">
-                                                            <IconButton size="medium" color="default">
-                                                                <MoreVertIcon />
                                                             </IconButton>
                                                         </Tooltip>
                                                     </TableCell>
@@ -274,7 +275,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={5} align="center">
+                                                <TableCell colSpan={7} align="center">
                                                     No active producer servers
                                                 </TableCell>
                                             </TableRow>
@@ -319,6 +320,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                             <TableCell align="center">Port</TableCell>
                                             <TableCell align="center">Status</TableCell>
                                             <TableCell align="center">Uptime</TableCell>
+                                            <TableCell align="center">CPU</TableCell>
+                                            <TableCell align="center">Memory</TableCell>
                                             <TableCell align="center">Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -337,23 +340,25 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                                         />
                                                     </TableCell>
                                                     <TableCell align="center">{formatTime(smsWorkerRow.upTime)}</TableCell>
+                                                    <TableCell align="center">{smsWorkerRow.cpu.toFixed(2) + '%'}</TableCell>
+                                                    <TableCell align="center">{smsWorkerRow.memory.toFixed(2) + '%'}</TableCell>
                                                     <TableCell align="center">
                                                         <Tooltip title="Shutdown">
                                                             <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${smsWorkerRow.componentId.split(':')[0]}:${smsWorkerRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
                                                                 <PowerSettingsNewIcon />
                                                             </IconButton>
                                                         </Tooltip>
-                                                        <Tooltip title="More">
+                                                        {/* <Tooltip title="More">
                                                             <IconButton size="medium" color="default">
                                                                 <MoreVertIcon />
                                                             </IconButton>
-                                                        </Tooltip>
+                                                        </Tooltip> */}
                                                     </TableCell>
                                                 </TableRow>
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={5} align="center">
+                                                <TableCell colSpan={7} align="center">
                                                     No active sms workers
                                                 </TableCell>
                                             </TableRow>
@@ -397,6 +402,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                             <TableCell align="center">Port</TableCell>
                                             <TableCell align="center">Status</TableCell>
                                             <TableCell align="center">Uptime</TableCell>
+                                            <TableCell align="center">CPU</TableCell>
+                                            <TableCell align="center">Memory</TableCell>
                                             <TableCell align="center">Actions</TableCell>
                                         </TableRow>
                                     </TableHead>
@@ -415,6 +422,8 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                                         />
                                                     </TableCell>
                                                     <TableCell align="center">{formatTime(emailWorkerRow.upTime)}</TableCell>
+                                                    <TableCell align="center">{emailWorkerRow.cpu.toFixed(2) + '%'}</TableCell>
+                                                    <TableCell align="center">{emailWorkerRow.memory.toFixed(2) + '%'}</TableCell>
                                                     <TableCell align="center">
                                                         <Tooltip title="Shutdown">
                                                             <IconButton size="medium" color="error" onClick={() => initiateShutdown(`${config.restProtocol}://${emailWorkerRow.componentId.split(':')[0]}:${emailWorkerRow.componentId.split(':')[1]}${config.contextPath}${config.actuatorShutdown}`)}>
@@ -431,7 +440,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={5} align="center">
+                                                <TableCell colSpan={7} align="center">
                                                     No active email workers
                                                 </TableCell>
                                             </TableRow>
