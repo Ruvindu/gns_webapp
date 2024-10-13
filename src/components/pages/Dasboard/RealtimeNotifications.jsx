@@ -12,6 +12,80 @@ import useWsHandler from '../../../useWsHandler';
 
 const RealtimeNotifications = () => {
 
+    const wsMessages = useWsHandler();
+
+    const [realTimeNotifications, setRealTimeNotifications] = useState([]);
+
+
+    const createRealTimeNotification = (jsonMsg) => {
+        const realTimeNotification = {
+            id: jsonMsg.data.id,
+            type: jsonMsg.data.type,
+            priority: jsonMsg.data.priority,
+            status: jsonMsg.data.status,
+            time: jsonMsg.data.timeConsumed
+        }
+        return realTimeNotification;
+    }
+
+    const initiateAndUpdateRealTimeNotifications = (jsonMsg) => {
+
+        if (jsonMsg.head.msgType === 1) {
+            console.log(jsonMsg);
+            const newRealTimeNotification = createRealTimeNotification(jsonMsg);
+
+            setRealTimeNotifications((prevRealTimeNotifications) => {
+                const exists = prevRealTimeNotifications.some(realTimeNotification => realTimeNotification.id === newRealTimeNotification.id);
+                if (!exists) {
+                    return [...prevRealTimeNotifications, newRealTimeNotification];
+                } else {
+                    return prevRealTimeNotifications.map(realTimeNotification => {
+                        if (realTimeNotification.id === newRealTimeNotification.id) {
+                            return { ...realTimeNotification, status: newRealTimeNotification.status, time: newRealTimeNotification.time };
+                        }
+                        return realTimeNotification;
+                    });
+                }
+            });
+
+        }
+
+    }
+
+
+    // useEffect(() => {
+    //     const processMessage = async (msg) => {
+    //         try {
+    //             // Simulate offloading work to a new "thread" asynchronously
+    //             await new Promise((resolve) => setTimeout(resolve, 0));
+    //             initiateAndUpdateRealTimeNotifications(msg);
+    //         } catch (error) {
+    //             console.warn('Error processing real-time notifications:', error);
+    //         }
+    //     };
+
+    //     try {
+    //         if (wsMessages !== undefined) {
+    //             let msg = JSON.parse(wsMessages);
+    //             processMessage(msg);
+    //         }
+    //     } catch (error) {
+    //         console.warn('Error parsing WebSocket message:', error);
+    //     }
+    // }, [wsMessages]);
+
+
+    useEffect(() => {
+        try {
+            if (wsMessages !== undefined) {
+                let msg = JSON.parse(wsMessages);
+
+                initiateAndUpdateRealTimeNotifications(msg);
+            }
+        } catch (error) {
+            console.warn('Error parsing WebSocket message:', error);
+        }
+    }, [wsMessages]);
 
     // Custom function to render
     const renderType = (type) => {
@@ -103,20 +177,13 @@ const RealtimeNotifications = () => {
     };
 
     const columns = [
-        { field: 'id', headerName: 'ID', width: 100 },
+        { field: 'id', headerName: 'ID', width: 110 },
         { field: 'type', headerName: 'Type', width: 100, headerAlign: 'center', align: 'center', renderCell: (params) => renderType(params.value) },
         { field: 'priority', headerName: 'Priority', width: 100, headerAlign: 'center', align: 'center', renderCell: (params) => renderPriority(params.value) },
-        { field: 'status', headerName: 'Status', width: 200, headerAlign: 'center', align: 'center', renderCell: (params) => renderStatus(params.value) },
-        { field: 'time', headerName: 'Time Consumed', width: 150, headerAlign: 'center', align: 'center' }
+        { field: 'status', headerName: 'Status', width: 170, headerAlign: 'center', align: 'center', renderCell: (params) => renderStatus(params.value) },
+        { field: 'time', headerName: 'Time Consumed (sec)', width: 160, headerAlign: 'center', align: 'center' }
     ];
 
-    const rows = [
-        { id: 1, type: 1, priority: 1, status: 1, time: 1727503737313 },
-        { id: 2, type: 2, priority: 2, status: 2, time: 1727503737313 },
-        { id: 3, type: 1, priority: 1, status: 3, time: 1727503737313 },
-        { id: 4, type: 2, priority: 1, status: 4, time: 1727503737313 },
-        { id: 5, type: 2, priority: 1, status: -1, time: 1727503737313 }
-    ]
 
 
     return (
@@ -129,11 +196,17 @@ const RealtimeNotifications = () => {
 
                 <Box sx={{ height: 250, width: '100%' }}>
                     <DataGrid
-                        rows={rows}
+                        rows={realTimeNotifications}
                         columns={columns}
                         hideFooterPagination={true}
                         hideFooter={true}
                         pageSize={2}
+                        sortModel={[
+                            {
+                                field: 'id',
+                                sort: 'desc',
+                            },
+                        ]}
                     />
                 </Box>
 

@@ -152,7 +152,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
         activeProducerComponents.forEach((component, index) => {
             if (component.lastUpdatedAt instanceof Date) {
                 let timeDiff = new Date() - component.lastUpdatedAt;
-                if (timeDiff > 3000) {
+                if (timeDiff > 5000) {
                     activeProducerComponents.splice(index, 1);
                 }
             }
@@ -161,7 +161,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
         activeSMSWorkerComponents.forEach((component, index) => {
             if (component.lastUpdatedAt instanceof Date) {
                 let timeDiff = new Date() - component.lastUpdatedAt;
-                if (timeDiff > 3000) {
+                if (timeDiff > 5000) {
                     activeSMSWorkerComponents.splice(index, 1);
                 }
             }
@@ -170,7 +170,7 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
         activeEmailWorkerComponents.forEach((component, index) => {
             if (component.lastUpdatedAt instanceof Date) {
                 let timeDiff = new Date() - component.lastUpdatedAt;
-                if (timeDiff > 3000) {
+                if (timeDiff > 5000) {
                     activeEmailWorkerComponents.splice(index, 1);
                 }
             }
