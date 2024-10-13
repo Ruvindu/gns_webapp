@@ -30,62 +30,38 @@ const RealtimeNotifications = () => {
 
     const initiateAndUpdateRealTimeNotifications = (jsonMsg) => {
 
-        if (jsonMsg.head.msgType === 1) {
-            console.log(jsonMsg);
-            const newRealTimeNotification = createRealTimeNotification(jsonMsg);
+        const newRealTimeNotification = createRealTimeNotification(jsonMsg);
 
-            setRealTimeNotifications((prevRealTimeNotifications) => {
-                const exists = prevRealTimeNotifications.some(realTimeNotification => realTimeNotification.id === newRealTimeNotification.id);
-                if (!exists) {
-                    return [...prevRealTimeNotifications, newRealTimeNotification];
-                } else {
-                    return prevRealTimeNotifications.map(realTimeNotification => {
-                        if (realTimeNotification.id === newRealTimeNotification.id) {
-                            return { ...realTimeNotification, status: newRealTimeNotification.status, time: newRealTimeNotification.time };
-                        }
-                        return realTimeNotification;
-                    });
-                }
-            });
-
-        }
-
+        setRealTimeNotifications((prevRealTimeNotifications) => {
+            const exists = prevRealTimeNotifications.some(realTimeNotification => realTimeNotification.id === newRealTimeNotification.id);
+            if (!exists) {
+                return [...prevRealTimeNotifications, newRealTimeNotification];
+            } else {
+                return prevRealTimeNotifications.map(realTimeNotification => {
+                    if (realTimeNotification.id === newRealTimeNotification.id) {
+                        return { ...realTimeNotification, status: newRealTimeNotification.status, time: newRealTimeNotification.time };
+                    }
+                    return realTimeNotification;
+                });
+            }
+        });
     }
 
-
-    // useEffect(() => {
-    //     const processMessage = async (msg) => {
-    //         try {
-    //             // Simulate offloading work to a new "thread" asynchronously
-    //             await new Promise((resolve) => setTimeout(resolve, 0));
-    //             initiateAndUpdateRealTimeNotifications(msg);
-    //         } catch (error) {
-    //             console.warn('Error processing real-time notifications:', error);
-    //         }
-    //     };
-
-    //     try {
-    //         if (wsMessages !== undefined) {
-    //             let msg = JSON.parse(wsMessages);
-    //             processMessage(msg);
-    //         }
-    //     } catch (error) {
-    //         console.warn('Error parsing WebSocket message:', error);
-    //     }
-    // }, [wsMessages]);
-
-
+    
     useEffect(() => {
         try {
             if (wsMessages !== undefined) {
                 let msg = JSON.parse(wsMessages);
 
-                initiateAndUpdateRealTimeNotifications(msg);
+                if (msg.head.msgType === 1) initiateAndUpdateRealTimeNotifications(msg);
             }
         } catch (error) {
             console.warn('Error parsing WebSocket message:', error);
         }
     }, [wsMessages]);
+
+
+
 
     // Custom function to render
     const renderType = (type) => {
