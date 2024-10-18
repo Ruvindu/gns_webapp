@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useConfig from '../../useConfig';
-import { Box, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, Card, CardContent, TextField, Button, Chip, MenuItem, IconButton, Stack, Tooltip, Backdrop, CircularProgress, Snackbar, Alert, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid2';
 import SendIcon from '@mui/icons-material/Send';
@@ -58,6 +58,29 @@ const NotificationManager = () => {
     }));
   };
 
+  /* Dialog box */
+  const [openDialog, setOpenDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    callback: () => { }
+  });
+
+  const handleCloseDialog = () => {
+    setOpenDialog(prevState => ({
+      ...prevState,
+      open: false,
+    }));
+  };
+
+  const handleOpenDialog = (dialogTitle, dialogContent, customAction) => {
+    setOpenDialog({
+      open: true,
+      title: dialogTitle,
+      content: dialogContent,
+      callback: customAction
+    });
+  };
 
   /* Notification Form Consts */
 
@@ -330,20 +353,21 @@ const NotificationManager = () => {
     { field: 'subject', headerName: 'SUBJECT', width: 150 },
     { field: 'body', headerName: 'BODY', width: 200 },
     { field: 'recipient', headerName: 'RECIPIENT', width: 100 },
-    { field: 'recipientCC', headerName: 'RECIPIENT CC', width: 100 },
-    { field: 'recipientBCC', headerName: 'RECIPIENT BCC', width: 100 },
+    { field: 'recipientCC', headerName: 'RECIPIENT CC', width: 110 },
+    { field: 'recipientBCC', headerName: 'RECIPIENT BCC', width: 110 },
     {
-      field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 100, headerAlign: 'center', align: 'center',
+      field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 110, headerAlign: 'center', align: 'center',
       valueGetter: (value, row) => `${row.type},${row.attachment_available}`, renderCell: (params) => renderAttachmentAvailability(params.value)
     },
-    { field: 'failedReason', headerName: 'FAILED REASON', width: 300 },
-
+    { field: 'resentCount', headerName: 'RESENT COUNT', width: 140, headerAlign: 'center', align: 'center' },
+    { field: 'failedReason', headerName: 'FAILED REASON', width: 300 }
   ];
 
   const [loading, setLoading] = useState(false);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 100 });
   const [notificationTableRows, setNotificationTableRows] = useState([]);
   const [totalItems, setTotalItems] = useState(0); // Track total items for pagination
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const retrieveAllNotifications = async () => {
     setLoading(true);
@@ -376,6 +400,7 @@ const NotificationManager = () => {
         recipientCC: notificationRow.recipientCC?.toString() ?? "",
         recipientBCC: notificationRow.recipientBCC?.toString() ?? "",
         attachment_available: notificationRow.isAttachmentsAvailable?.toString() ?? "",
+        resentCount: notificationRow.resentCount?.toString() ?? "",
         failedReason: notificationRow.failedReason?.toString() ?? ""
       }));
 
@@ -415,6 +440,60 @@ const NotificationManager = () => {
   }, [config, paginationModel]);
 
 
+
+  //Resend selected notification
+  const resendSelectedRows = () => {
+    if (!selectedRows.length > 0) {
+      handleOpenSnackbar('No notification seleted', 'warning');
+      return;
+    }
+
+    handleOpenDialog(
+      `Are you sure want to resend this notification(s)?`,
+      `You have selected ${selectedRows.length} notification(s) to resend. This action cannot be undone.`,
+      resendNotifications
+    );
+  }
+
+  const resendNotifications = async () => {
+
+    handleCloseDialog();
+
+    /* load configurations */
+    if (!config) {
+      console.error('Configuration is not loaded yet.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}${config.resendNotifications}`,
+        selectedRows
+      );
+
+      const data = response.data;
+      console.log('Success:', data);
+
+      retrieveAllNotifications();
+    } catch (error) {
+      console.error('Error:', error);
+
+      if (error.response) {
+        // Server responded with a status code outside of the range of 2xx
+        handleOpenSnackbar(
+          error.response.data.message || 'Notification resent failed. Unexpected error occurred',
+          'error'
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        handleOpenSnackbar('Notification resent failed. No response received from server', 'error');
+      } else {
+        // Something else happened while setting up the request
+        handleOpenSnackbar(error.message, 'error');
+      }
+    }
+  }
+
+
   return (
     <Grid container spacing={3} padding={5}>
 
@@ -436,6 +515,26 @@ const NotificationManager = () => {
           {openSnackbar.message}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={openDialog.open}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {openDialog.title}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {openDialog.content}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>No</Button>
+          <Button onClick={openDialog.callback} autoFocus>Yes</Button>
+        </DialogActions>
+      </Dialog>
 
 
       <Grid size={12}>
@@ -634,16 +733,16 @@ const NotificationManager = () => {
                 </Tooltip>
 
                 <Tooltip title="Re Send">
-                  <IconButton aria-label="resend">
+                  <IconButton aria-label="resend" onClick={() => resendSelectedRows()}>
                     <SendIcon />
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Delete">
+                {/* <Tooltip title="Delete">
                   <IconButton aria-label="delete">
                     <DeleteIcon />
                   </IconButton>
-                </Tooltip>
+                </Tooltip> */}
               </Stack>
 
             </Box>
@@ -660,6 +759,9 @@ const NotificationManager = () => {
                 page={paginationModel.page}
                 onPaginationModelChange={(newPaginationModel) => {
                   setPaginationModel(newPaginationModel);
+                }}
+                onRowSelectionModelChange={(newSelection) => {
+                  setSelectedRows(newSelection);
                 }}
                 checkboxSelection
                 sx={{ border: 0 }}

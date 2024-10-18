@@ -16,6 +16,7 @@
 
     "createNotification": "/notifications/create-notification",
     "getAllNotifications": "/notifications/get-all-notifications",
+    "resendNotifications": "/notifications/resend-notifications",
 
     "realtimeDataChannel": "/realtime-data-channel",
 
