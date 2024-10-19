@@ -568,6 +568,7 @@ const Templates = () => {
                 value={formData.templateDescription}
                 onChange={handleChange}
                 fullWidth
+                required
                 size='small'
               />
 
