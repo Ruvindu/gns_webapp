@@ -359,7 +359,7 @@ const NotificationManager = () => {
       field: 'attachment_available', headerName: 'ATTACHMENT AVAILABLE', width: 110, headerAlign: 'center', align: 'center',
       valueGetter: (value, row) => `${row.type},${row.attachment_available}`, renderCell: (params) => renderAttachmentAvailability(params.value)
     },
-    { field: 'resentCount', headerName: 'RESENT COUNT', width: 140, headerAlign: 'center', align: 'center' },
+    { field: 'sentCount', headerName: 'SENT COUNT', width: 140, headerAlign: 'center', align: 'center' },
     { field: 'failedReason', headerName: 'FAILED REASON', width: 300 }
   ];
 
@@ -400,7 +400,7 @@ const NotificationManager = () => {
         recipientCC: notificationRow.recipientCC?.toString() ?? "",
         recipientBCC: notificationRow.recipientBCC?.toString() ?? "",
         attachment_available: notificationRow.isAttachmentsAvailable?.toString() ?? "",
-        resentCount: notificationRow.resentCount?.toString() ?? "",
+        sentCount: notificationRow.sentCount?.toString() ?? "",
         failedReason: notificationRow.failedReason?.toString() ?? ""
       }));
 
