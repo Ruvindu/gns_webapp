@@ -20,6 +20,11 @@
 
     "realtimeDataChannel": "/realtime-data-channel",
 
-    "actuatorShutdown": "/actuator/shutdown "
+    "actuatorShutdown": "/actuator/shutdown",
+
+    "getCacheEntries": "/cache/all-entries",
+    "clearCacheEntry": "/cache/clear-cache-entry/",
+    "getCacheObjects": "/cache/cache-objects/",
+    "clearCacheObjects": "/cache/clear-cache-objects/"
   }
   
