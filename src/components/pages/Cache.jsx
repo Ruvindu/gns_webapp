@@ -168,6 +168,7 @@ const Cache = () => {
         handleOpenSnackbar(error.message, 'error');
       }
     } finally {
+      setCacheObjectsRows([]);
       retrieveCacheEntriesRow();
     }
 
