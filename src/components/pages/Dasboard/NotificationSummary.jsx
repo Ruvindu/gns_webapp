@@ -2,33 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Card, CardContent } from '@mui/material';
 import { BarChart } from '@mui/x-charts';
 import { useTheme } from '@mui/material/styles';
-import useWsHandler from '../../../useWsHandler';
 
 
-const NotificationSummary = () => {
+const NotificationSummary = ({ wsMessages }) => {
 
     const theme = useTheme();
-    const wsMessages = useWsHandler();
 
     const [dates, setDates] = useState([]);
     const [processed, setProcessed] = useState([]);
     const [failed, setFailed] = useState([]);
 
-    const updateNotificationsSummary= (jsonMsg) => {
+    const updateNotificationsSummary = (jsonMsg) => {
         setDates(jsonMsg.data.dates);
         setProcessed(jsonMsg.data.totalProcessed);
         setFailed(jsonMsg.data.totalFailed);
     }
 
     useEffect(() => {
-        try {
-            if (wsMessages !== undefined) {
-                let msg = JSON.parse(wsMessages);
-
-                if (msg.head.msgType === 5) updateNotificationsSummary(msg);
-            }
-        } catch (error) {
-            console.warn('Error parsing WebSocket message:', error);
+        if (wsMessages !== null) {
+            updateNotificationsSummary(wsMessages);
         }
     }, [wsMessages]);
 

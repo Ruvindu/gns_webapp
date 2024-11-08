@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Skeleton } from '@mui/material';
 import { PieChart } from '@mui/x-charts';
-import useWsHandler from '../../../useWsHandler';
 
 
-const TemplatesOverview = () => {
+const TemplatesOverview = ({ wsMessages }) => {
 
     const palette = ['gray', 'orange', 'brown'];
 
-    const wsMessages = useWsHandler();
 
     const [smsTemplatesPresentage, setSmsTemplatesPresentage] = useState(0);
     const [emailTemplatesPresentage, setEmailTemplatesPresentage] = useState(0);
@@ -27,14 +25,8 @@ const TemplatesOverview = () => {
 
 
     useEffect(() => {
-        try {
-            if (wsMessages !== undefined) {
-                let msg = JSON.parse(wsMessages);
-
-                if (msg.head.msgType === 4) updateNotificationsOverview(msg);
-            }
-        } catch (error) {
-            console.warn('Error parsing WebSocket message:', error);
+        if (wsMessages !== null) {
+            updateNotificationsOverview(wsMessages);
         }
     }, [wsMessages]);
 

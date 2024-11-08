@@ -3,12 +3,10 @@ import axios from 'axios';
 import { Box, Typography, Card, CardContent, Accordion, AccordionSummary, AccordionDetails, Badge, Chip, IconButton, Tooltip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import useWsHandler from '../../../useWsHandler';
 
 
-const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, handleCloseDialog }) => {
 
-    const wsMessages = useWsHandler();
+const ComponentMonitoring = ({ config, wsMessages, handleOpenSnackbar, handleOpenDialog, handleCloseDialog }) => {
 
     const [activeProducerComponents, setActiveProducerComponents] = useState([]);
     const [activeSMSWorkerComponents, setActiveSMSWorkerComponents] = useState([]);
@@ -174,19 +172,11 @@ const ComponentMonitoring = ({ config, handleOpenSnackbar, handleOpenDialog, han
 
     };
 
-    
-    useEffect(() => {
-        try {
-            if (wsMessages !== undefined) {
-                let msg = JSON.parse(wsMessages);
 
-                if (msg.head.msgType === 2 || msg.head.msgType === 3) {
-                    initiateAndUpdateComponents(msg);
-                    removeDeactiveComponents();
-                }
-            }
-        } catch (error) {
-            console.warn('Error parsing WebSocket message:', error);
+    useEffect(() => {
+        if (wsMessages !== null) {
+            initiateAndUpdateComponents(wsMessages);
+            removeDeactiveComponents();
         }
     }, [wsMessages]);
 

@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Chip, CircularProgress } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import { DataGrid } from '@mui/x-data-grid';
 import SmsIcon from '@mui/icons-material/Sms';
 import EmailIcon from '@mui/icons-material/Email';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import DoneIcon from '@mui/icons-material/Done';
-import useWsHandler from '../../../useWsHandler';
 
 
-const RealtimeNotifications = () => {
-
-    const wsMessages = useWsHandler();
+const RealtimeNotifications = ({ wsMessages }) => {
 
     const [realTimeNotifications, setRealTimeNotifications] = useState([]);
-
 
     const createRealTimeNotification = (jsonMsg) => {
         const realTimeNotification = {
@@ -47,19 +42,11 @@ const RealtimeNotifications = () => {
         });
     }
 
-    
     useEffect(() => {
-        try {
-            if (wsMessages !== undefined) {
-                let msg = JSON.parse(wsMessages);
-
-                if (msg.head.msgType === 1) initiateAndUpdateRealTimeNotifications(msg);
-            }
-        } catch (error) {
-            console.warn('Error parsing WebSocket message:', error);
+        while (wsMessages.length > 0) {
+            initiateAndUpdateRealTimeNotifications(wsMessages.shift());
         }
     }, [wsMessages]);
-
 
 
 
