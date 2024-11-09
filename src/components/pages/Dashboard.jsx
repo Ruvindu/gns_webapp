@@ -206,9 +206,9 @@ const DashBoard = () => {
         <ComponentMonitoring config={config} wsMessages={wsMsgsToComponentMonitoring} handleOpenSnackbar={handleOpenSnackbar} handleOpenDialog={handleOpenDialog} handleCloseDialog={handleCloseDialog} />
       </Grid>
 
-      <Grid size={{ xs: 12, md: 6 }} marginTop={2}>
+      {/* <Grid size={{ xs: 12, md: 6 }} marginTop={2}>
         <ConnectivityDiagram />
-      </Grid>
+      </Grid> */}
 
     </Grid >
   );
