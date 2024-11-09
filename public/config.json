@@ -18,7 +18,7 @@
     "getAllNotifications": "/notifications/get-all-notifications",
     "resendNotifications": "/notifications/resend-notifications",
 
-    "streamingApi": "/topic/streaming-api",
+    "streamingApi": "/realtime-data-channel",
 
     "actuatorShutdown": "/actuator/shutdown",
 

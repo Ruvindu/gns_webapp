@@ -16,7 +16,6 @@ import ConnectivityDiagram from './Dasboard/ConnectivityDiagram';
 const DashBoard = () => {
 
   const config = useConfig();
-  const stompClientRef = useRef(null);
   const [wsMsgsToRealtimeNotifications, setWsMsgsToRealtimeNotifications] = useState([]);
   const [wsMsgsToComponentMonitoring, setWsMsgsToComponentMonitoring] = useState(null);
   const [wsMsgsToTemplatesOverview, setWsMsgsToTemplatesOverview] = useState(null);
@@ -24,64 +23,74 @@ const DashBoard = () => {
   const [wsMsgsToNotificationSummary, setWsMsgsToNotificationSummary] = useState(null);
   // const [wsMsgsToConnectivityDiagram, setWsMsgsToConnectivityDiagram] = useState(null);
 
+  let socket;
 
   useEffect(() => {
-    if (config && !stompClientRef.current) { // Check if stomp ClientRef is already initialized
+    const connectWebSocket = () => {
+      if (config && !socket) {
+        socket = new WebSocket(`${config.wsProtocol}://${config.host}:${config.port}${config.contextPath}${config.streamingApi}`);
 
-      const socket = new SockJS(`${config.restProtocol}://${config.host}:${config.port}${config.contextPath}`);
-      const stompClient = new Client({
-        webSocketFactory: () => socket,
-        onConnect: (frame) => {
-          stompClient.subscribe(`${config.streamingApi}`, (wsMessage) => {
+        socket.onmessage = (event) => {
+          try {
+            let wsMessage = event.data;
+            if (wsMessage !== null || wsMessage !== undefined) {
+              let jsonMsg = JSON.parse(wsMessage);
 
-            try {
-              if (wsMessage.body !== null || wsMessage.body !== undefined) {
-                let jsonMsg = JSON.parse(wsMessage.body);
-
-                switch (jsonMsg.head.msgType) {
-                  case 1:
-                    setWsMsgsToRealtimeNotifications((prevMsgs) => [...prevMsgs, jsonMsg]);
-                    break;
-                  case 2:
-                  case 3:
-                    setWsMsgsToComponentMonitoring(jsonMsg);
-                    break;
-                  case 4:
-                    setWsMsgsToTemplatesOverview(jsonMsg);
-                    setWsMsgsToNotificationsOverview(jsonMsg);
-                    break;
-                  case 5:
-                    setWsMsgsToNotificationSummary(jsonMsg);
-                    break;
-                  default:
-                    console.warn('Unknown message type :', jsonMsg);
-                    break;
-                }
-
+              switch (jsonMsg.head.msgType) {
+                case 1:
+                  setWsMsgsToRealtimeNotifications((prevMsgs) => [...prevMsgs, jsonMsg]);
+                  break;
+                case 2:
+                case 3:
+                  setWsMsgsToComponentMonitoring(jsonMsg);
+                  break;
+                case 4:
+                  setWsMsgsToTemplatesOverview(jsonMsg);
+                  setWsMsgsToNotificationsOverview(jsonMsg);
+                  break;
+                case 5:
+                  setWsMsgsToNotificationSummary(jsonMsg);
+                  break;
+                default:
+                  console.warn('Unknown message type :', jsonMsg);
+                  break;
               }
-            } catch (error) {
-              console.warn('Error parsing WebSocket message:', error);
+
             }
+          } catch (error) {
+            console.warn('Error parsing WebSocket message:', error);
+          }
 
-          });
-        },
-        onStompError: (error) => {
-          console.error("STOMP error:", error);
-        }
-      });
+        };
 
-      stompClient.activate();
-      stompClientRef.current = stompClient;
-    }
+        socket.onopen = () => {
+          console.log('WebSocket connected');
+        };
 
-    return () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate();
-        stompClientRef.current = null; // Clean up the reference on unmount
+        socket.onclose = () => {
+          console.log('WebSocket disconnected');
+          socket = null;
+        };
+
+        socket.onerror = (error) => {
+          console.log('WebSocket error: ', error);
+        };
       }
     };
-  }, [config]);
 
+    connectWebSocket(); // Initial connection attempt
+
+    const intervalId = setInterval(() => {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        connectWebSocket(); // Attempt to reconnect if not connected
+      }
+    }, 6000); // Retry every 10 seconds
+
+
+    return () => {
+      clearInterval(intervalId); // Clear the interval on cleanup
+    };
+  }, [config]);
 
 
   /* Snackbar */
