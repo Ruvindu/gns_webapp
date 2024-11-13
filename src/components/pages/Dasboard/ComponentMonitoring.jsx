@@ -174,8 +174,8 @@ const ComponentMonitoring = ({ config, wsMessages, handleOpenSnackbar, handleOpe
 
 
     useEffect(() => {
-        if (wsMessages !== null) {
-            initiateAndUpdateComponents(wsMessages);
+        while (wsMessages.length > 0) {
+            initiateAndUpdateComponents(wsMessages.shift());
             removeDeactiveComponents();
         }
     }, [wsMessages]);

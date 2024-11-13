@@ -17,7 +17,7 @@ const DashBoard = () => {
 
   const config = useConfig();
   const [wsMsgsToRealtimeNotifications, setWsMsgsToRealtimeNotifications] = useState([]);
-  const [wsMsgsToComponentMonitoring, setWsMsgsToComponentMonitoring] = useState(null);
+  const [wsMsgsToComponentMonitoring, setWsMsgsToComponentMonitoring] = useState([]);
   const [wsMsgsToTemplatesOverview, setWsMsgsToTemplatesOverview] = useState(null);
   const [wsMsgsToNotificationsOverview, setWsMsgsToNotificationsOverview] = useState(null);
   const [wsMsgsToNotificationSummary, setWsMsgsToNotificationSummary] = useState(null);
@@ -42,7 +42,7 @@ const DashBoard = () => {
                   break;
                 case 2:
                 case 3:
-                  setWsMsgsToComponentMonitoring(jsonMsg);
+                  setWsMsgsToComponentMonitoring((prevMsgs) => [...prevMsgs, jsonMsg]);
                   break;
                 case 4:
                   setWsMsgsToTemplatesOverview(jsonMsg);
