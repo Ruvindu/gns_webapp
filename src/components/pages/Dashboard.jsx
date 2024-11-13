@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import React, { useState, useEffect } from 'react';
 import useConfig from '../../useConfig';
 import { Typography, Snackbar, Alert, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText } from '@mui/material';
 import Grid from '@mui/material/Grid2';
