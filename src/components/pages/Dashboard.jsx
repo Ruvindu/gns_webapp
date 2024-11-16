@@ -7,7 +7,7 @@ import RealtimeNotifications from './Dasboard/RealtimeNotifications';
 import ComponentMonitoring from './Dasboard/ComponentMonitoring';
 import TemplatesOverview from './Dasboard/TemplatesOverview';
 import NotificationsOverview from './Dasboard/NotificationsOverview';
-import ConnectivityDiagram from './Dasboard/ConnectivityDiagram';
+import ExternalConnections from './Dasboard/ExternalConnections';
 
 
 
@@ -19,7 +19,7 @@ const DashBoard = () => {
   const [wsMsgsToTemplatesOverview, setWsMsgsToTemplatesOverview] = useState(null);
   const [wsMsgsToNotificationsOverview, setWsMsgsToNotificationsOverview] = useState(null);
   const [wsMsgsToNotificationSummary, setWsMsgsToNotificationSummary] = useState(null);
-  // const [wsMsgsToConnectivityDiagram, setWsMsgsToConnectivityDiagram] = useState(null);
+  const [wsMsgsToExternalConnections, setWsMsgsToExternalConnections] = useState([]);
 
   let socket;
 
@@ -48,6 +48,9 @@ const DashBoard = () => {
                   break;
                 case 5:
                   setWsMsgsToNotificationSummary(jsonMsg);
+                  break;
+                case 6:
+                  setWsMsgsToExternalConnections((prevMsgs) => [...prevMsgs, jsonMsg]);
                   break;
                 default:
                   console.warn('Unknown message type :', jsonMsg);
@@ -204,9 +207,9 @@ const DashBoard = () => {
         <ComponentMonitoring config={config} wsMessages={wsMsgsToComponentMonitoring} handleOpenSnackbar={handleOpenSnackbar} handleOpenDialog={handleOpenDialog} handleCloseDialog={handleCloseDialog} />
       </Grid>
 
-      {/* <Grid size={{ xs: 12, md: 6 }} marginTop={2}>
-        <ConnectivityDiagram />
-      </Grid> */}
+      <Grid size={{ xs: 12, md: 4 }} marginTop={2}>
+        <ExternalConnections wsMessages={wsMsgsToExternalConnections} />
+      </Grid>
 
     </Grid >
   );
