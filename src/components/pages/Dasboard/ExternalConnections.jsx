@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardContent, List, ListItem, Avatar, ListItemText, ListItemAvatar, Badge, Skeleton } from '@mui/material';
+import { Box, Typography, Card, CardContent, List, ListItem, Avatar, ListItemText, ListItemAvatar, Badge, Skeleton, Stack } from '@mui/material';
 import DnsIcon from '@mui/icons-material/Dns';
 
 const ExternalConnections = ({ wsMessages }) => {
@@ -56,28 +56,41 @@ const ExternalConnections = ({ wsMessages }) => {
                 }}>
 
 
-                    <List>
-                        {allExternalConnections.map((connection, index) => (
-                            <ListItem key={connection.uniqueId || index}>
-                                <ListItemAvatar>
-                                    <Badge
-                                        color={connection.health === "UP" ? "success" : "warning"}
-                                        overlap="circular"
-                                        variant="dot"
-                                    >
-                                        <Avatar>
-                                            <DnsIcon />
-                                        </Avatar>
-                                    </Badge>
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={connection.svrName || "Unknown Server"}
-                                    secondary={
-                                        connection.Summary ? connection.Summary : ""
-                                    }
-                                />
-                            </ListItem>
-                        ))}
+                    <List style={{ width: "100%" }}>
+                        {
+                            (allExternalConnections.length > 0) ? (
+
+                                allExternalConnections.map((connection, index) => (
+                                    <ListItem key={connection.uniqueId || index}>
+                                        <ListItemAvatar>
+                                            <Badge
+                                                color={connection.health === "UP" ? "success" : "warning"}
+                                                overlap="circular"
+                                                variant="dot"
+                                            >
+                                                <Avatar>
+                                                    <DnsIcon />
+                                                </Avatar>
+                                            </Badge>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            primary={connection.svrName || "Unknown Server"}
+                                            secondary={
+                                                connection.Summary ? connection.Summary : ""
+                                            }
+                                        />
+                                    </ListItem>
+                                ))
+
+                            ) : (
+                                <Stack spacing={1}>
+                                    <Skeleton variant="rounded" animation="wave" height={65} width="100%" />
+                                    <Skeleton variant="rounded" animation="wave" height={65} width="100%" />
+                                </Stack>
+                            )
+                        }
+
+
                     </List>
 
                 </Box>
